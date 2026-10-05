@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard operativo de mercadeo Panza — octubre 2026">
+  <title>Panza — Dashboard de mercadeo · Octubre 2026</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --midnight: #180620;
+      --recessed: #12041a;
+      --panel: #1e0a28;
+      --panel-2: #2a1030;
+      --purple-dark: #800096;
+      --purple: #b200d1;
+      --pink: #ff0084;
+      --orange: #ff6a00;
+      --amber: #ffa200;
+      --white: #ffffff;
+      --muted: #c9b7ce;
+      --line: rgba(255,255,255,.12);
+      --line-strong: rgba(255,255,255,.22);
+      --success: #4de0ad;
+      --danger: #ff5a91;
+      --gradient: linear-gradient(90deg,#800096 0%,#b200d1 28%,#ff0084 55%,#ff6a00 78%,#ffa200 100%);
+      --font: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+      --display: 'Baloo 2', var(--font);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--white);
+      background: var(--recessed);
+      font-family: var(--font);
+      font-size: 14px;
+    }
+    button, input, select { font: inherit; }
+    button { border-radius: 0; }
+    a { color: inherit; }
+    .shell { display: grid; grid-template-columns: 250px minmax(0,1fr); min-height: 100vh; }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 22px 22px;
+      background: #0e0313;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 28px; }
+    .brand img { width: 112px; height: auto; display: block; }
+    .brand-tag { color: var(--amber); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .nav-label { color: #8d7895; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin: 8px 0 10px; }
+    .nav { display: grid; gap: 4px; }
+    .nav button {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      padding: 11px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+    .nav button:hover { border-color: var(--line); color: white; }
+    .nav button.active { background: var(--amber); color: #1a0a1f; font-weight: 800; }
+    .nav-count { font-size: 11px; opacity: .8; }
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line); padding-top: 18px; }
+    .team-mini { display: grid; gap: 10px; }
+    .person-mini { display: grid; grid-template-columns: 28px 1fr; gap: 9px; align-items: center; }
+    .avatar { width: 28px; height: 28px; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--line-strong); font-weight: 800; font-size: 11px; }
+    .person-mini strong { display: block; font-size: 11px; }
+    .person-mini span { color: #947f9c; font-size: 9px; }
+
+    main { min-width: 0; }
+    .topbar {
+      min-height: 76px;
+      padding: 16px 34px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(24,6,32,.92);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .topbar-title strong { font-family: var(--display); font-size: 23px; line-height: 1; }
+    .topbar-title span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .btn { border: 1px solid var(--line-strong); background: transparent; color: white; padding: 10px 13px; cursor: pointer; font-weight: 700; }
+    .btn:hover { border-color: var(--amber); }
+    .btn-primary { background: var(--amber); color: #1a0a1f; border-color: var(--amber); }
+    .mobile-menu { display: none; }
+
+    .content { padding: 34px; max-width: 1560px; margin: 0 auto; }
+    .view { display: none; }
+    .view.active { display: block; animation: enter .2s ease-out; }
+    @keyframes enter { from { opacity: 0; transform: translateY(4px); } }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 38px;
+      min-height: 305px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(100deg,rgba(24,6,32,1) 0%,rgba(24,6,32,.94) 48%,rgba(24,6,32,.4) 80%),
+        radial-gradient(circle at 92% 60%,rgba(255,0,132,.72),rgba(178,0,209,.42) 36%,transparent 67%);
+    }
+    .hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: var(--gradient); }
+    .eyebrow { color: var(--amber); font-weight: 800; font-size: 12px; }
+    h1, h2, h3 { font-family: var(--display); margin: 0; }
+    h1 { font-size: clamp(44px,6vw,76px); line-height: .92; max-width: 760px; margin: 14px 0 18px; }
+    h2 { font-size: 34px; line-height: 1.05; }
+    h3 { font-size: 21px; line-height: 1.1; }
+    .hero p { max-width: 650px; color: #e2d6e6; font-size: 16px; line-height: 1.65; margin: 0; }
+    .hero-note { margin-top: 22px; display: inline-flex; border: 1px solid var(--line-strong); padding: 10px 12px; color: white; font-size: 11px; font-weight: 700; background: rgba(0,0,0,.22); }
+
+    .metrics { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); border: 1px solid var(--line); border-top: 0; }
+    .metric { padding: 23px 20px; border-right: 1px solid var(--line); background: var(--panel); }
+    .metric:last-child { border-right: 0; }
+    .metric strong { display: block; font-family: var(--display); font-size: 31px; color: var(--amber); line-height: 1; }
+    .metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; }
+
+    .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 38px 0 18px; }
+    .section-head p { margin: 6px 0 0; color: var(--muted); max-width: 700px; line-height: 1.5; }
+    .tag { display: inline-flex; padding: 5px 8px; border: 1px solid var(--line-strong); color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .tag.amber { color: #1a0a1f; background: var(--amber); border-color: var(--amber); }
+    .tag.pink { color: white; background: var(--pink); border-color: var(--pink); }
+    .tag.green { color: #072a1f; background: var(--success); border-color: var(--success); }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .card { border: 1px solid var(--line); background: var(--panel); padding: 22px; min-width: 0; }
+    .card.accent { border-top: 3px solid var(--amber); }
+    .card p { color: var(--muted); line-height: 1.55; }
+    .front-number { font-family: var(--display); font-size: 38px; color: #6e5576; line-height: 1; }
+    .front-card h3 { margin-top: 14px; }
+    .front-card ul, .detail-list { padding-left: 17px; color: var(--muted); line-height: 1.7; }
+    .front-card .owner-line { border-top: 1px solid var(--line); padding-top: 13px; margin-top: 18px; font-size: 11px; color: white; }
+
+    .progress-wrap { margin-top: 15px; }
+    .progress-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 10px; color: var(--muted); margin-bottom: 7px; }
+    .progress { height: 7px; background: rgba(255,255,255,.08); overflow: hidden; }
+    .progress > span { display: block; height: 100%; background: var(--gradient); width: 0; transition: width .2s ease; }
+
+    .filters { display: grid; grid-template-columns: minmax(220px,1fr) repeat(4,minmax(130px,180px)); gap: 8px; margin-bottom: 14px; }
+    .filter-control { width: 100%; padding: 11px 12px; color: white; background: var(--panel); border: 1px solid var(--line); outline: 0; }
+    .filter-control:focus { border-color: var(--amber); }
+    select option { background: var(--panel); }
+    .task-table { border: 1px solid var(--line); overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; min-width: 980px; }
+    th { padding: 12px; text-align: left; color: #9e89a6; background: #100316; border-bottom: 1px solid var(--line); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; position: sticky; top: 0; }
+    td { padding: 13px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: rgba(255,255,255,.025); }
+    tbody tr.done { opacity: .52; }
+    tbody tr.done .task-name { text-decoration: line-through; }
+    .check { appearance: none; width: 18px; height: 18px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; display: grid; place-items: center; margin: 0; }
+    .check:checked { background: var(--success); border-color: var(--success); }
+    .check:checked::after { content: '✓'; color: #09271f; font-size: 12px; font-weight: 900; }
+    .task-name { font-weight: 700; max-width: 340px; line-height: 1.35; }
+    .task-detail { color: var(--muted); font-size: 10px; line-height: 1.45; margin-top: 5px; max-width: 440px; }
+    .pending-hero { display: grid; grid-template-columns: minmax(260px,.78fr) 1.7fr; gap: 16px; margin-bottom: 20px; }
+    .progress-orb-card { min-height: 220px; display: flex; align-items: center; gap: 24px; padding: 26px; background: linear-gradient(135deg,var(--panel),#2b0c31); border: 1px solid var(--line); }
+    .progress-orb { --pct: 0; width: 132px; height: 132px; flex: 0 0 132px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--amber) calc(var(--pct)*1%),rgba(255,255,255,.08) 0); position: relative; }
+    .progress-orb::after { content:''; position:absolute; inset:12px; border-radius:50%; background:var(--panel); }
+    .progress-orb strong { position:relative; z-index:1; font-size:30px; }
+    .progress-copy h2 { margin:0 0 8px; font-size:25px; }
+    .progress-copy p { margin:0; color:var(--muted); line-height:1.55; font-size:12px; }
+    .pending-stats { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid var(--line); background:var(--panel); }
+    .pending-stat { padding:24px; border-right:1px solid var(--line); display:flex; flex-direction:column; justify-content:center; }
+    .pending-stat:last-child { border-right:0; }
+    .pending-stat strong { font-size:34px; color:var(--amber); }
+    .pending-stat span { color:var(--muted); font-size:10px; line-height:1.4; margin-top:6px; text-transform:uppercase; letter-spacing:.08em; }
+    .pending-toolbar { display:grid; grid-template-columns:1.5fr repeat(3,minmax(130px,.55fr)); gap:8px; margin-bottom:14px; }
+    .pending-list { display:grid; gap:18px; }
+    .pending-week { border:1px solid var(--line); background:var(--panel); }
+    .pending-week-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); }
+    .pending-week-head strong { font-size:13px; }
+    .pending-week-head span { color:var(--muted); font-size:10px; }
+    .pending-row { display:grid; grid-template-columns:32px 72px minmax(240px,1fr) 150px 110px; gap:12px; align-items:center; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,.055); transition:.18s ease; }
+    .pending-row:last-child { border-bottom:0; }
+    .pending-row:hover { background:rgba(255,255,255,.025); }
+    .pending-row.done { opacity:.52; }
+    .pending-row.done .pending-title { text-decoration:line-through; }
+    .pending-check { width:20px; height:20px; accent-color:var(--amber); cursor:pointer; }
+    .pending-date { font-size:10px; color:var(--amber); font-weight:800; text-transform:uppercase; }
+    .pending-title { font-size:12px; font-weight:750; line-height:1.35; }
+    .pending-meta { color:var(--muted); font-size:9px; margin-top:4px; line-height:1.45; }
+    .pending-owner { font-size:10px; line-height:1.35; }
+    .pending-owner span { display:block; color:var(--muted); margin-top:3px; }
+    .status-pill { display:inline-flex; align-items:center; justify-content:center; padding:6px 9px; border:1px solid var(--line); color:var(--muted); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+    .status-pill.ready { border-color:rgba(79,224,171,.45); color:var(--success); background:rgba(79,224,171,.08); }
+    .pending-empty { display:none; padding:34px 18px; border:1px dashed var(--line); color:var(--muted); text-align:center; }
+    .date { white-space: nowrap; font-weight: 700; color: var(--amber); font-size: 11px; }
+    .owner-stack { display: grid; gap: 3px; min-width: 130px; }
+    .owner-stack strong { font-size: 10px; }
+    .owner-stack span { color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .kpi { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .empty { padding: 50px 20px; text-align: center; color: var(--muted); display: none; }
+
+    .channel-hero { padding: 26px; border: 1px solid var(--line); background: var(--panel); display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; align-items: center; }
+    .channel-hero p { color: var(--muted); line-height: 1.6; }
+    .channel-stats { display: grid; grid-template-columns: repeat(2,1fr); border: 1px solid var(--line); }
+    .channel-stat { padding: 17px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .channel-stat:nth-child(2n) { border-right: 0; }
+    .channel-stat:nth-last-child(-n+2) { border-bottom: 0; }
+    .channel-stat strong { display: block; font-family: var(--display); font-size: 28px; color: var(--amber); }
+    .channel-stat span { color: var(--muted); font-size: 9px; text-transform: uppercase; font-weight: 700; }
+    .pillar { border-left: 3px solid var(--purple); padding: 16px 18px; background: var(--panel); }
+    .pillar:nth-child(2) { border-color: var(--pink); }
+    .pillar:nth-child(3) { border-color: var(--orange); }
+    .pillar:nth-child(4) { border-color: var(--amber); }
+    .pillar strong { display: block; font-family: var(--display); font-size: 20px; }
+    .pillar span { color: var(--muted); font-size: 11px; line-height: 1.5; display: block; margin-top: 4px; }
+
+    .week-grid { display: grid; grid-template-columns: repeat(5,minmax(180px,1fr)); gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .calendar-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+    .view-switch { padding: 7px 11px; font-size: 10px; }
+    .view-switch.active { color: #1a0a1f; background: var(--amber); border-color: var(--amber); }
+    .month-wrap { display: none; border: 1px solid var(--line); background: #100316; overflow-x: auto; }
+    .month-wrap.active { display: block; }
+    .month-title { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); min-width: 980px; }
+    .month-title strong { display: block; font-family: var(--display); font-size: 26px; }
+    .month-title span { display: block; color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .month-title .btn:disabled { opacity: .2; cursor: default; }
+    .month-grid { display: grid; grid-template-columns: repeat(7,minmax(140px,1fr)); min-width: 980px; }
+    .day-name { padding: 10px 12px; color: var(--amber); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--recessed); }
+    .day-name:nth-child(7) { border-right: 0; }
+    .day-cell { min-height: 150px; padding: 9px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--panel); }
+    .day-cell:nth-child(7n) { border-right: 0; }
+    .day-cell.outside { background: #0b020f; color: #57475e; }
+    .day-cell.today { box-shadow: inset 0 0 0 2px var(--amber); }
+    .day-number { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 10px; font-weight: 800; margin-bottom: 7px; }
+    .day-number strong { color: white; font-family: var(--display); font-size: 17px; }
+    .day-count { color: var(--amber); font-size: 8px; }
+    .calendar-event { width: 100%; display: block; border: 0; border-left: 3px solid var(--purple); background: var(--recessed); color: white; padding: 7px 7px 7px 8px; margin: 0 0 5px; text-align: left; cursor: pointer; font-size: 8px; line-height: 1.3; }
+    .calendar-event:hover { background: var(--panel-2); }
+    .calendar-event.done { opacity: .42; text-decoration: line-through; }
+    .calendar-event[data-kind="social"] { border-color: var(--pink); }
+    .calendar-event[data-kind="email"] { border-color: var(--amber); }
+    .calendar-event[data-kind="sales"] { border-color: var(--success); }
+    .calendar-event[data-kind="radar"] { border-color: #5bb7ff; }
+    .week { border: 1px solid var(--line); background: var(--panel); min-height: 330px; }
+    .week-head { padding: 15px; border-bottom: 1px solid var(--line); }
+    .week-head strong { font-family: var(--display); font-size: 20px; }
+    .week-head span { display: block; color: var(--amber); font-size: 9px; font-weight: 800; margin-top: 2px; text-transform: uppercase; }
+    .week-body { padding: 12px; display: grid; gap: 8px; }
+    .mini-task { padding: 10px; background: var(--recessed); border-left: 2px solid var(--purple); }
+    .mini-task[data-channel="Instagram"], .mini-task[data-channel="TikTok"] { border-color: var(--pink); }
+    .mini-task[data-channel="Email"] { border-color: var(--amber); }
+    .mini-task[data-channel="Apollo"] { border-color: var(--success); }
+    .mini-task strong { display: block; font-size: 10px; line-height: 1.35; }
+    .mini-task span { color: var(--muted); font-size: 8px; display: block; margin-top: 4px; }
+
+    .team-card { display: grid; grid-template-columns: 92px 1fr; gap: 18px; align-items: start; }
+    .team-avatar { width: 92px; height: 92px; display: grid; place-items: center; font-family: var(--display); font-size: 34px; font-weight: 800; background: var(--gradient); }
+    .role-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0 0; }
+    .capacity { margin-top: 18px; padding: 15px; border: 1px solid var(--line); background: var(--recessed); }
+    .capacity strong { display: flex; justify-content: space-between; font-size: 10px; }
+    .capacity-note { color: var(--muted); font-size: 10px; line-height: 1.45; margin-top: 9px; }
+    .warning { border: 1px solid var(--amber); background: rgba(255,162,0,.08); padding: 18px; color: #ffe2a6; line-height: 1.55; }
+    .support-card { border-top: 3px solid var(--pink); }
+    .support-card .need { color: var(--amber); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+
+    .funnel { display: grid; grid-template-columns: repeat(5,1fr); gap: 0; border: 1px solid var(--line); }
+    .funnel-step { padding: 22px 18px; background: var(--panel); border-right: 1px solid var(--line); position: relative; }
+    .funnel-step:last-child { border-right: 0; }
+    .funnel-step:not(:last-child)::after { content: '›'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); z-index: 2; color: var(--amber); font-size: 25px; }
+    .funnel-step strong { display: block; font-family: var(--display); font-size: 18px; }
+    .funnel-step span { display: block; color: var(--muted); font-size: 9px; line-height: 1.45; margin-top: 6px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; color: var(--muted); font-size: 9px; }
+    .legend i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; }
+    .footer-note { margin-top: 38px; padding-top: 18px; border-top: 1px solid var(--line); color: #806e87; font-size: 10px; display: flex; justify-content: space-between; gap: 20px; }
+    .library-toolbar { display: grid; grid-template-columns: minmax(240px,1fr) 220px 180px; gap: 8px; margin-bottom: 14px; }
+    .library-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .asset-card { border: 1px solid var(--line); background: var(--panel); min-width: 0; }
+    .asset-head { padding: 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+    .asset-head h3 { margin-top: 9px; }
+    .asset-meta { color: var(--muted); font-size: 9px; margin-top: 7px; line-height: 1.5; }
+    .asset-body { padding: 6px 18px 18px; }
+    .copy-block { border-bottom: 1px solid var(--line); padding: 14px 0; }
+    .copy-block:last-child { border-bottom: 0; }
+    .copy-label { color: var(--amber); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .copy-text { white-space: pre-wrap; color: #eadfed; font-size: 12px; line-height: 1.65; margin-top: 8px; }
+    .copy-one { border: 0; background: transparent; color: var(--muted); font-size: 9px; font-weight: 700; cursor: pointer; padding: 3px 0 3px 8px; }
+    .copy-one:hover { color: white; }
+    .asset-actions { display: grid; gap: 7px; flex: 0 0 110px; }
+    .asset-actions .btn { padding: 8px; font-size: 9px; }
+    .library-empty { grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: var(--muted); border: 1px solid var(--line); }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 50; background: var(--success); color: #09271f; padding: 12px 16px; font-size: 11px; font-weight: 800; transform: translateY(20px); opacity: 0; pointer-events: none; transition: .2s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 1180px) {
+      .metrics { grid-template-columns: repeat(3,1fr); }
+      .metric:nth-child(3) { border-right: 0; }
+      .metric:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+      .grid-4 { grid-template-columns: repeat(2,1fr); }
+      .filters { grid-template-columns: repeat(2,1fr); }
+      .filters input { grid-column: 1 / -1; }
+      .funnel { grid-template-columns: 1fr; }
+      .funnel-step { border-right: 0; border-bottom: 1px solid var(--line); }
+      .funnel-step:last-child { border-bottom: 0; }
+      .funnel-step:not(:last-child)::after { content: '⌄'; right: 20px; top: auto; bottom: -15px; }
+    }
+    @media (max-width: 820px) {
+      .shell { display: block; }
+      .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s ease; width: 270px; }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-menu { display: inline-flex; }
+      .topbar { padding: 13px 18px; }
+      .content { padding: 22px 16px; }
+      .hero { padding: 28px 22px; }
+      .metrics { grid-template-columns: repeat(2,1fr); }
+      .metric { border-bottom: 1px solid var(--line); }
+      .metric:nth-child(2n) { border-right: 0; }
+      .metric:nth-child(n+5) { border-bottom: 0; }
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .filters { grid-template-columns: 1fr; }
+      .filters input { grid-column: auto; }
+      .channel-hero { grid-template-columns: 1fr; }
+      .team-card { grid-template-columns: 60px 1fr; }
+      .team-avatar { width: 60px; height: 60px; font-size: 24px; }
+      .top-actions .btn:not(.mobile-menu) { display: none; }
+      h1 { font-size: 44px; }
+      .footer-note { display: block; }
+      .library-toolbar, .library-grid { grid-template-columns: 1fr; }
+      .pending-hero { grid-template-columns:1fr; }
+      .pending-stats { grid-template-columns:1fr; }
+      .pending-stat { border-right:0; border-bottom:1px solid var(--line); }
+      .pending-stat:last-child { border-bottom:0; }
+      .pending-toolbar { grid-template-columns:1fr; }
+      .pending-row { grid-template-columns:30px 58px 1fr; }
+      .pending-row .pending-owner, .pending-row .status-pill { grid-column:3; }
+      .progress-orb-card { align-items:flex-start; }
+      .progress-orb { width:100px; height:100px; flex-basis:100px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="panza-logo.png" alt="Panza">
+        <div class="brand-tag">Oct · 2026</div>
+      </div>
+      <div class="nav-label">Dashboard</div>
+      <nav class="nav" id="nav">
+        <button class="active" data-view="resumen">Resumen <span class="nav-count">01</span></button>
+        <button data-view="pendientes">Pendientes <span class="nav-count" id="countPending">—</span></button>
+        <button data-view="calendario">Calendario <span class="nav-count" id="countAll">—</span></button>
+        <button data-view="redes">Redes sociales <span class="nav-count">03</span></button>
+        <button data-view="influencers">Influencers <span class="nav-count">04</span></button>
+        <button data-view="partners">Partners <span class="nav-count">02</span></button>
+        <button data-view="apollo">Apollo <span class="nav-count">02</span></button>
+        <button data-view="email">Email <span class="nav-count">09</span></button>
+        <button data-view="biblioteca">Guiones y copys <span class="nav-count" id="countAssets">—</span></button>
+        <button data-view="radar">Radar semanal <span class="nav-count">04</span></button>
+        <button data-view="equipo">Equipo <span class="nav-count">02+</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="nav-label">Equipo base</div>
+        <div class="team-mini">
+          <div class="person-mini"><div class="avatar">CM</div><div><strong>Camila</strong><span>Dirección + producción</span></div></div>
+          <div class="person-mini"><div class="avatar">SG</div><div><strong>Santiago</strong><span>Vocero en cámara</span></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="topbar-title">
+          <strong id="viewTitle">Resumen mensual</strong>
+          <span>Plan operativo de mercadeo · 1–31 de octubre de 2026</span>
+        </div>
+        <div class="top-actions">
+          <button class="btn mobile-menu" id="menuBtn">Menú</button>
+          <button class="btn" id="resetBtn">Reiniciar progreso</button>
+          <button class="btn btn-primary" data-go="pendientes">Ver pendientes</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="view active" id="view-resumen">
+          <div class="hero">
+            <div class="eyebrow">Dirección estratégica de octubre</div>
+            <h1>Que vuelvan no es suerte.</h1>
+            <p>Octubre construye autoridad, distribución y conversaciones comerciales para Panza. El bootcamp no es el centro: primero fortalecemos la voz de la marca, las colaboraciones y el canal de partners.</p>
+            <div class="hero-note">NORTE DEL MES · conversaciones → demos → instalaciones → MRR</div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric"><strong>20</strong><span>Conversaciones calificadas</span></div>
+            <div class="metric"><strong>6–8</strong><span>Demos objetivo</span></div>
+            <div class="metric"><strong>3–5</strong><span>Tiendas nuevas</span></div>
+            <div class="metric"><strong>6</strong><span>Reuniones con agencias</span></div>
+            <div class="metric"><strong>2</strong><span>Partners activados</span></div>
+            <div class="metric"><strong>3–4</strong><span>Colaboraciones</span></div>
+          </div>
+
+          <div class="section-head">
+            <div><h2>Cuatro frentes de trabajo</h2><p>Cada frente cumple una función distinta dentro del crecimiento. No todos buscan alcance.</p></div>
+            <span class="tag amber">Enfoque del mes</span>
+          </div>
+          <div class="grid-4">
+            <article class="card front-card accent"><div class="front-number">01</div><h3>Autoridad propia</h3><ul><li>Panza en cámara</li><li>Análisis de marcas</li><li>Casos y producto real</li></ul><div class="owner-line"><strong>Dueña:</strong> Camila · <strong>Vocero:</strong> Santiago</div></article>
+            <article class="card front-card accent"><div class="front-number">02</div><h3>Distribución prestada</h3><ul><li>Creadores B2B</li><li>Agencias y comunidades</li><li>Auditorías de recompra</li></ul><div class="owner-line"><strong>Dueña:</strong> Camila · <strong>Necesita:</strong> Aliado externo</div></article>
+            <article class="card front-card accent"><div class="front-number">03</div><h3>Adquisición directa</h3><ul><li>Apollo para marcas</li><li>Apollo para agencias</li><li>LinkedIn 1:1</li></ul><div class="owner-line"><strong>Responsable recomendado:</strong> apoyo BDR / comercial</div></article>
+            <article class="card front-card accent"><div class="front-number">04</div><h3>Conversión y prueba</h3><ul><li>Email y seguimiento</li><li>Demos e instalaciones</li><li>Reseñas y mini casos</li></ul><div class="owner-line"><strong>Dueña:</strong> Camila · <strong>Necesita:</strong> Producto/CS</div></article>
+          </div>
+
+          <div class="section-head"><div><h2>Embudo del mes</h2><p>El contenido no termina en visualizaciones: cada pieza debe alimentar una acción siguiente.</p></div></div>
+          <div class="funnel">
+            <div class="funnel-step"><strong>Descubrimiento</strong><span>Reels, TikTok, análisis de marcas y colaboraciones.</span></div>
+            <div class="funnel-step"><strong>Interés</strong><span>Comentario RECOMPRA, DM, auditoría o respuesta a email.</span></div>
+            <div class="funnel-step"><strong>Diagnóstico</strong><span>Revisión corta de la tienda y oportunidad de retorno.</span></div>
+            <div class="funnel-step"><strong>Demostración</strong><span>Configuración sugerida, alcance y acompañamiento Panza.</span></div>
+            <div class="funnel-step"><strong>Activación</strong><span>Instalación, primer valor, reseña y caso documentado.</span></div>
+          </div>
+
+          <div class="section-head"><div><h2>Progreso operativo</h2><p>Se actualiza al marcar tareas como terminadas en el calendario.</p></div></div>
+          <div class="grid-3" id="progressCards"></div>
+        </section>
+
+        <section class="view" id="view-pendientes">
+          <div class="section-head" style="margin-top:0">
+            <div><div class="eyebrow">Control operativo</div><h2>Pendientes del mes</h2><p>Marca cada tarea cuando esté realmente lista. El avance queda guardado en este navegador y actualiza todo el dashboard.</p></div>
+            <button class="btn" id="myPendingBtn">Ver pendientes de Camila</button>
+          </div>
+          <div class="pending-hero">
+            <div class="progress-orb-card">
+              <div class="progress-orb" id="overallOrb"><strong id="overallPct">0%</strong></div>
+              <div class="progress-copy"><h2 id="overallLabel">Empezando el mes</h2><p id="overallCopy">Cada check mueve el plan de intención a ejecución.</p></div>
+            </div>
+            <div class="pending-stats">
+              <div class="pending-stat"><strong id="doneCount">0</strong><span>Tareas listas</span></div>
+              <div class="pending-stat"><strong id="pendingCount">0</strong><span>Pendientes del mes</span></div>
+              <div class="pending-stat"><strong id="emailDoneCount">0/5</strong><span>Correos comerciales</span></div>
+              <div class="pending-stat"><strong id="clientEmailDoneCount">0/4</strong><span>Correos para clientes</span></div>
+            </div>
+          </div>
+          <div class="pending-toolbar">
+            <input class="filter-control" id="pendingSearch" type="search" placeholder="Buscar pendiente…">
+            <select class="filter-control" id="pendingStatus"><option value="pending">Solo pendientes</option><option value="done">Solo listos</option><option value="">Todos los estados</option></select>
+            <select class="filter-control" id="pendingChannel"><option value="">Todos los canales</option></select>
+            <select class="filter-control" id="pendingOwner"><option value="">Todo el equipo</option><option value="Camila">Camila</option><option value="Santiago">Santiago</option><option value="BDR">BDR / comercial</option></select>
+          </div>
+          <div class="pending-list" id="pendingList"></div>
+          <div class="pending-empty" id="pendingEmpty">No hay tareas que coincidan con estos filtros.</div>
+        </section>
+
+        <section class="view" id="view-calendario">
+          <div class="section-head" style="margin-top:0"><div><h2>Calendario maestro</h2><p>Filtra por canal, frente, responsable o semana. El progreso queda guardado en este navegador.</p></div><div class="calendar-actions"><button class="btn view-switch active" data-calendar-view="list">Lista</button><button class="btn view-switch" data-calendar-view="month">Mes</button><span class="tag" id="visibleCount">0 tareas</span></div></div>
+          <div class="filters">
+            <input class="filter-control" id="search" type="search" placeholder="Buscar tarea, entregable o KPI…">
+            <select class="filter-control" id="filterChannel"><option value="">Todos los canales</option></select>
+            <select class="filter-control" id="filterFront"><option value="">Todos los frentes</option></select>
+            <select class="filter-control" id="filterOwner"><option value="">Todos los responsables</option></select>
+            <select class="filter-control" id="filterWeek"><option value="">Todas las semanas</option></select>
+          </div>
+          <div class="task-table" id="calendarList">
+            <table>
+              <thead><tr><th>✓</th><th>Fecha</th><th>Tarea / entregable</th><th>Canal</th><th>Frente</th><th>Responsables</th><th>KPI</th></tr></thead>
+              <tbody id="taskBody"></tbody>
+            </table>
+            <div class="empty" id="emptyState">No hay tareas que coincidan con estos filtros.</div>
+          </div>
+          <div class="month-wrap" id="calendarMonth">
+            <div class="month-title"><button class="btn" disabled>‹</button><div><strong>Octubre 2026</strong><span>Vista mensual de producción y crecimiento</span></div><button class="btn" disabled>›</button></div>
+            <div class="month-grid" id="monthGrid"></div>
+          </div>
+          <div class="section-head"><div><h2>Vista por semana</h2><p>Hitos principales del mes; el calendario maestro contiene el detalle completo.</p></div></div>
+          <div class="week-grid" id="weekGrid"></div>
+        </section>
+
+        <section class="view" id="view-redes">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Instagram · TikTok · LinkedIn</div><h2>Autoridad primero. Alcance con intención.</h2><p>Santiago pone la cara y la voz. Camila convierte esa materia prima en un sistema: estrategia, guion, dirección de grabación, diseño, edición, publicación y conversación.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>4×</strong><span>Piezas IG / semana</span></div><div class="channel-stat"><strong>4×</strong><span>Piezas TikTok / semana</span></div><div class="channel-stat"><strong>2×</strong><span>Posts LinkedIn / semana</span></div><div class="channel-stat"><strong>2</strong><span>Bloques de grabación / semana</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Pilares editoriales</h2><p>El contenido debe enseñar, demostrar o abrir una conversación. Nunca publicar por llenar una fecha.</p></div></div>
+          <div class="grid-4">
+            <div class="pillar"><strong>30% Educación</strong><span>Recompra, puntos, recompensas, referidos y VIP.</span></div>
+            <div class="pillar"><strong>20% Marcas</strong><span>Mecanismos de lealtad de referentes y aprendizajes aplicables.</span></div>
+            <div class="pillar"><strong>20% Prueba</strong><span>Casos, producto, pantallas, procesos y detrás de cámaras.</span></div>
+            <div class="pillar"><strong>30% Distribución</strong><span>Colaboraciones, entretenimiento útil y venta directa.</span></div>
+          </div>
+          <div class="section-head"><div><h2>Rol de cada red</h2></div></div>
+          <div class="grid-3">
+            <article class="card"><span class="tag pink">Instagram</span><h3 style="margin-top:14px">Confianza y conversación</h3><p>Reels, carruseles, historias y publicaciones colaborativas. CTA: RECOMPRA, DM o envío a un dueño de e-commerce.</p><div class="owner-line"><strong>Camila:</strong> todo el flujo de producción.<br><strong>Santiago:</strong> aparición en reels.</div></article>
+            <article class="card"><span class="tag pink">TikTok</span><h3 style="margin-top:14px">Descubrimiento</h3><p>Opinión directa, respuestas a comentarios, errores rápidos y análisis. Reutiliza grabación, no edición idéntica.</p><div class="owner-line"><strong>Camila:</strong> hook, edición y publicación.<br><strong>Santiago:</strong> interpretación en cámara.</div></article>
+            <article class="card"><span class="tag amber">LinkedIn</span><h3 style="margin-top:14px">Autoridad B2B</h3><p>Decisiones de negocio, construcción pública, partners y aprendizajes. Publicación desde Santiago y desde Panza.</p><div class="owner-line"><strong>Camila:</strong> ghostwriting, diseño y gestión.<br><strong>Santiago:</strong> validación de voz.</div></article>
+          </div>
+          <div class="section-head"><div><h2>Tareas de redes</h2></div><button class="btn" data-filter-go="social">Abrir filtradas</button></div>
+          <div id="socialTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-influencers">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Campaña de distribución prestada</div><h2>Auditorías de recompra</h2><p>Un aliado invita a su comunidad, Panza selecciona una tienda y Santiago analiza su recompra. El resultado se convierte en contenido, lead, conversación comercial y posible caso.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>20</strong><span>Perfiles investigados</span></div><div class="channel-stat"><strong>10</strong><span>Contactos personalizados</span></div><div class="channel-stat"><strong>3–4</strong><span>Colaboraciones</span></div><div class="channel-stat"><strong>50</strong><span>Leads identificables</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>A quién buscar</h2></div></div>
+          <div class="grid-3">
+            <article class="card"><h3>Microcreadores B2B</h3><p>Shopify, e-commerce, Meta Ads, email, CRO, retención o emprendimiento. Importa más la audiencia correcta que el tamaño.</p></article>
+            <article class="card"><h3>Agencias con vocero</h3><p>Fundador o estratega visible que ya atienda marcas digitales y pueda convertirse también en partner.</p></article>
+            <article class="card"><h3>Comunidades</h3><p>Clubes de fundadores, newsletters, cámaras y grupos de marcas que permitan una sesión educativa.</p></article>
+          </div>
+          <div class="section-head"><div><h2>Intercambio correcto</h2><p>No regalar tres planes completos sin condiciones.</p></div></div>
+          <div class="grid-2">
+            <article class="card accent"><h3>Panza entrega</h3><ul class="detail-list"><li>Auditoría de recompra</li><li>Contenido conjunto</li><li>Sesión educativa</li><li>Plan conceptual para una marca</li><li>Comisión recurrente si aplica como partner</li></ul></article>
+            <article class="card accent"><h3>El aliado entrega</h3><ul class="detail-list"><li>Acceso real a su audiencia</li><li>Publicación colaborativa</li><li>CTA medible</li><li>Presentación de marcas calificadas</li><li>Autorización para reutilizar el contenido</li></ul></article>
+          </div>
+          <div class="section-head"><div><h2>Tareas de influencers</h2></div><button class="btn" data-filter-go="Influencers">Abrir filtradas</button></div>
+          <div id="influencerTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-partners">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Canal de agencias Panza</div><h2>Un servicio nuevo, sin construir la tecnología.</h2><p>Partners significa el programa de agencias, desarrolladores, diseñadores y consultores. Ellos recomiendan Panza y reciben comisión recurrente mientras la tienda siga activa.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>120</strong><span>Agencias investigadas</span></div><div class="channel-stat"><strong>60</strong><span>Contactos personalizados</span></div><div class="channel-stat"><strong>6</strong><span>Reuniones</span></div><div class="channel-stat"><strong>2</strong><span>Partners activos</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Mensaje de valor</h2></div></div>
+          <div class="grid-4">
+            <div class="card"><h3>Ingreso recurrente</h3><p>Comisión mensual mientras el cliente continúe activo.</p></div>
+            <div class="card"><h3>Nuevo servicio</h3><p>Lealtad, puntos y referidos dentro del portafolio de la agencia.</p></div>
+            <div class="card"><h3>Panza acompaña</h3><p>Tecnología, estrategia, implementación y soporte directo.</p></div>
+            <div class="card"><h3>La relación se conserva</h3><p>La agencia mantiene su vínculo y liderazgo frente al cliente.</p></div>
+          </div>
+          <div class="section-head"><div><h2>Tareas de partners</h2></div><button class="btn" data-filter-go="Partners">Abrir filtradas</button></div>
+          <div id="partnerTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-apollo">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Adquisición directa</div><h2>Dos listas. Dos mensajes. Un solo CRM.</h2><p>Las marcas reciben una observación sobre su recompra. Las agencias reciben una propuesta de negocio. Mezclar ambas audiencias debilita la respuesta.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>280</strong><span>Marcas objetivo</span></div><div class="channel-stat"><strong>120</strong><span>Agencias investigadas</span></div><div class="channel-stat"><strong>14–18</strong><span>Contactos diarios</span></div><div class="channel-stat"><strong>4</strong><span>Toques máximos</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Secuencias</h2></div></div>
+          <div class="grid-2">
+            <article class="card accent"><span class="tag">Marcas Shopify</span><h3 style="margin-top:14px">Observación → oportunidad → diagnóstico</h3><ol class="detail-list"><li>Hallazgo concreto de la tienda.</li><li>Problema de recompra relacionado con la categoría.</li><li>Ejemplo de mecanismo aplicable.</li><li>Invitación a diagnóstico de 15 minutos.</li></ol><p><strong>Owner recomendado:</strong> apoyo BDR/comercial. Camila entrega mensajes y piezas.</p></article>
+            <article class="card accent"><span class="tag">Agencias</span><h3 style="margin-top:14px">Portafolio → comisión → reunión</h3><ol class="detail-list"><li>Referencia a sus servicios y clientes Shopify.</li><li>Presentación del servicio de lealtad.</li><li>Comisión recurrente y acompañamiento.</li><li>Invitación a reunión de partners.</li></ol><p><strong>Owner recomendado:</strong> apoyo BDR/comercial. Camila dirige comunicación.</p></article>
+          </div>
+          <div class="section-head"><div><h2>Tareas de Apollo</h2></div><button class="btn" data-filter-go="Apollo">Abrir filtradas</button></div>
+          <div id="apolloTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-email">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Conversión + Customer Education</div><h2>Dos audiencias. Dos objetivos.</h2><p>Los correos comerciales abren conversaciones con marcas y partners. La nueva serie para clientes activos les ayuda a usar mejor Panza, activar su programa y encontrar la siguiente mejora.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>4</strong><span>Newsletters comerciales</span></div><div class="channel-stat"><strong>1</strong><span>Email para partners</span></div><div class="channel-stat"><strong>4</strong><span>Emails para clientes</span></div><div class="channel-stat"><strong>1</strong><span>Acción clara por correo</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Secuencia comercial</h2><p>Contenido para marcas potenciales y agencias.</p></div></div>
+          <div class="grid-3">
+            <article class="card"><span class="tag amber">8 oct</span><h3 style="margin-top:12px">El problema no empieza con los puntos</h3><p>Diagnóstico y variables previas al diseño de un programa.</p></article>
+            <article class="card"><span class="tag amber">15 oct</span><h3 style="margin-top:12px">¿Cuántos puntos debería entregar?</h3><p>Educación y respuesta según categoría y ticket promedio.</p></article>
+            <article class="card"><span class="tag amber">22 oct</span><h3 style="margin-top:12px">Así diseñaríamos la recompra</h3><p>Auditoría o caso de una marca del mes.</p></article>
+            <article class="card"><span class="tag amber">29 oct</span><h3 style="margin-top:12px">Más descuentos no es más lealtad</h3><p>Comparación entre descuento, recompensa, referidos y VIP.</p></article>
+            <article class="card"><span class="tag pink">27 oct</span><h3 style="margin-top:12px">Una nueva línea para agencias</h3><p>Correo segmentado exclusivamente para posibles partners.</p></article>
+          </div>
+          <div class="section-head"><div><h2>Serie para clientes activos</h2><p>Educación práctica para aumentar la adopción y el valor percibido de Panza.</p></div><span class="tag green">Nueva</span></div>
+          <div class="grid-4">
+            <article class="card accent"><span class="tag amber">7 oct</span><h3 style="margin-top:12px">Haz que la gente lo use</h3><p>Visibilidad del programa en la tienda, postcompra y canales de la marca.</p></article>
+            <article class="card accent"><span class="tag amber">14 oct</span><h3 style="margin-top:12px">Recompensas que mueven</h3><p>Tres opciones para incentivar una segunda compra sin copiar a otra tienda.</p></article>
+            <article class="card accent"><span class="tag amber">21 oct</span><h3 style="margin-top:12px">Activación en siete días</h3><p>Una campaña sencilla para hacer visible y utilizable el programa.</p></article>
+            <article class="card accent"><span class="tag amber">28 oct</span><h3 style="margin-top:12px">Revisión mensual</h3><p>Participación, redención, recompra y comunicación para decidir la próxima mejora.</p></article>
+          </div>
+          <div class="section-head"><div><h2>Tareas de email comercial</h2></div><button class="btn" data-filter-go="Email">Abrir filtradas</button></div>
+          <div id="emailTaskPreview"></div>
+          <div class="section-head"><div><h2>Tareas de educación a clientes</h2></div><button class="btn" data-filter-go="Email Clientes">Abrir filtradas</button></div>
+          <div id="clientEmailTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-biblioteca">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Centro de producción</div><h2>Guiones, copys y mensajes listos para trabajar.</h2><p>Cada pieza está conectada con el calendario de octubre. Puedes filtrar por canal, copiar una sección o llevarte el contenido completo para grabación, diseño, email o prospección.</p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong id="assetTotal">35</strong><span>Activos de contenido</span></div><div class="channel-stat"><strong>15</strong><span>Videos y carruseles</span></div><div class="channel-stat"><strong>9</strong><span>Emails completos</span></div><div class="channel-stat"><strong>8</strong><span>Mensajes outbound</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Biblioteca por canal</h2><p>Los campos entre corchetes deben completarse con datos reales antes de publicar o enviar.</p></div><span class="tag amber" id="assetVisible">30 piezas</span></div>
+          <div class="library-toolbar">
+            <input class="filter-control" id="assetSearch" type="search" placeholder="Buscar guion, copy, asunto o mensaje…">
+            <select class="filter-control" id="assetChannel"><option value="">Todos los canales</option></select>
+            <select class="filter-control" id="assetType"><option value="">Todos los formatos</option></select>
+          </div>
+          <div class="library-grid" id="assetGrid"></div>
+        </section>
+
+        <section class="view" id="view-radar">
+          <div class="channel-hero">
+            <div><div class="eyebrow">Inteligencia competitiva · semanal</div><h2>Del hallazgo a una decisión para Panza.</h2><p>El Radar no es otra lista de ideas. Cada edición debe producir una decisión editorial, comercial o de producto que entre al calendario con responsable y fecha.</p><p><a href="https://claude.ai/artifact/5StDqmimk1y8SJmNeqnkY9" target="_blank" rel="noopener" style="color:var(--amber);font-weight:700">Abrir Radar Panza original ↗</a></p></div>
+            <div class="channel-stats"><div class="channel-stat"><strong>1×</strong><span>Revisión semanal</span></div><div class="channel-stat"><strong>1</strong><span>Decisión por edición</span></div><div class="channel-stat"><strong>1</strong><span>Pieza prioritaria</span></div><div class="channel-stat"><strong>100%</strong><span>Datos verificados</span></div></div>
+          </div>
+          <div class="section-head"><div><h2>Qué cambia en octubre</h2><p>Decisiones incorporadas a partir de la edición del 21 de septiembre.</p></div><span class="tag amber">Ya aplicado</span></div>
+          <div class="grid-3">
+            <article class="card accent"><span class="tag pink">Urgente</span><h3 style="margin-top:12px">Santiago como cara</h3><p>La primera pieza del mes es educativa, de 30–45 segundos y no presenta a Panza como producto. Primero construye voz y reconocimiento.</p></article>
+            <article class="card accent"><span class="tag pink">Prueba</span><h3 style="margin-top:12px">Un dato real supera un ejemplo perfecto</h3><p>Se agrega una pieza basada en ticket promedio, recompra o comportamiento verificable de un cliente actual. No se inventan cifras.</p></article>
+            <article class="card accent"><span class="tag pink">Conversión</span><h3 style="margin-top:12px">CTA único en piezas de venta</h3><p>Solo casos y comparativas cierran con la llamada de 20 minutos y el plan de lealtad construido con números reales.</p></article>
+            <article class="card"><span class="tag">Búsqueda social</span><h3 style="margin-top:12px">Contenido encontrable</h3><p>Hooks, subtítulos y overlays nombran Shopify, recompra, lealtad, puntos, referidos o VIP. Evitamos títulos que podrían pertenecer a cualquier marca.</p></article>
+            <article class="card"><span class="tag">Competencia</span><h3 style="margin-top:12px">Loyalz y Leal como señales</h3><p>Loyalz sirve como referencia de vocero y ejecución; Leal como referencia educativa regional. Se observan mecanismos, no se copian piezas.</p></article>
+            <article class="card"><span class="tag">Criterio</span><h3 style="margin-top:12px">Verificar antes de publicar</h3><p>Rumores, cifras de seguidores y estadísticas globales permanecen como hipótesis hasta encontrar una fuente confiable y actual.</p></article>
+          </div>
+
+          <div class="section-head"><div><h2>Flujo semanal del Radar</h2><p>Todos los lunes. Máximo 45 minutos para que la investigación no reemplace la ejecución.</p></div></div>
+          <div class="funnel">
+            <div class="funnel-step"><strong>1. Leer</strong><span>Qué cambió en competencia, benchmarks y tendencias.</span></div>
+            <div class="funnel-step"><strong>2. Verificar</strong><span>Fuente, fecha, contexto y confiabilidad del dato.</span></div>
+            <div class="funnel-step"><strong>3. Interpretar</strong><span>Por qué importa específicamente para Panza.</span></div>
+            <div class="funnel-step"><strong>4. Decidir</strong><span>Una acción concreta, no una lista de posibilidades.</span></div>
+            <div class="funnel-step"><strong>5. Calendarizar</strong><span>Fecha, canal, owner, entregable y KPI.</span></div>
+          </div>
+
+          <div class="section-head"><div><h2>Checklist antes de producir</h2></div></div>
+          <div class="grid-2">
+            <article class="card"><h3>Contenido educativo</h3><ul class="detail-list"><li>¿La pregunta aparece en palabras que alguien buscaría?</li><li>¿Santiago habla desde experiencia o criterio real?</li><li>¿La pieza funciona sin mencionar Panza?</li><li>¿El dato tiene fuente o está claramente marcado como ejemplo?</li><li>¿Hay una sola idea central?</li></ul></article>
+            <article class="card"><h3>Contenido comercial</h3><ul class="detail-list"><li>¿La tienda o el caso tiene contexto suficiente?</li><li>¿La promesa coincide con lo que Panza puede entregar?</li><li>¿El CTA invita a una llamada de 20 minutos?</li><li>¿Pide ticket promedio, margen y categoría?</li><li>¿Podemos identificar el origen del lead?</li></ul></article>
+          </div>
+
+          <div class="section-head"><div><h2>Tareas del Radar en octubre</h2></div><button class="btn" data-filter-go="Radar">Abrir filtradas</button></div>
+          <div id="radarTaskPreview"></div>
+        </section>
+
+        <section class="view" id="view-equipo">
+          <div class="section-head" style="margin-top:0"><div><h2>Equipo y responsabilidades</h2><p>Dos personas pueden ejecutar el plan si trabajan por bloques y reciben apoyo puntual en prospección y casos.</p></div></div>
+          <div class="grid-2">
+            <article class="card team-card">
+              <div class="team-avatar">CM</div>
+              <div><span class="tag amber">Dirección y producción</span><h3 style="margin-top:12px">Camila Martínez</h3><p>Dueña del sistema de mercadeo y de la consistencia de marca.</p><div class="role-list"><span class="tag">Estrategia</span><span class="tag">Guiones</span><span class="tag">Diseño</span><span class="tag">Comunicación</span><span class="tag">Email</span><span class="tag">Grabación</span><span class="tag">Edición</span><span class="tag">Publicación</span></div><div class="capacity"><strong><span>Carga estimada</span><span>Alta</span></strong><div class="progress"><span style="width:88%"></span></div><div class="capacity-note">No debería asumir además la operación diaria completa de Apollo. Eso pondría en riesgo la calidad de contenido y email.</div></div></div>
+            </article>
+            <article class="card team-card">
+              <div class="team-avatar">SG</div>
+              <div><span class="tag pink">Vocero de Panza</span><h3 style="margin-top:12px">Santiago</h3><p>Responsable de aparecer en cámara y transmitir la autoridad de Panza de forma clara y humana.</p><div class="role-list"><span class="tag">Reels</span><span class="tag">TikTok</span><span class="tag">Auditorías</span><span class="tag">Lives</span><span class="tag">Validación de voz</span></div><div class="capacity"><strong><span>Carga recomendada</span><span>2 bloques/semana</span></strong><div class="progress"><span style="width:45%"></span></div><div class="capacity-note">Dos sesiones de 60–90 minutos deben producir la materia prima de toda la semana. No edita ni publica.</div></div></div>
+            </article>
+          </div>
+
+          <div class="section-head"><div><h2>Apoyos necesarios</h2><p>No todos tienen que ser contrataciones permanentes; algunos son participaciones puntuales.</p></div></div>
+          <div class="grid-3">
+            <article class="card support-card"><div class="need">Recomendado · 8–12 h/semana</div><h3 style="margin-top:12px">Apoyo BDR / comercial</h3><p>Construye listas, opera Apollo, responde señales, actualiza CRM y agenda reuniones. Sin este apoyo, reducir el volumen de prospección a la mitad.</p></article>
+            <article class="card support-card"><div class="need">Puntual · 2 h/semana</div><h3 style="margin-top:12px">Producto / Customer Success</h3><p>Entrega datos de tiendas, valida afirmaciones técnicas, identifica momentos de valor y facilita testimonios o reseñas.</p></article>
+            <article class="card support-card"><div class="need">Por colaboración</div><h3 style="margin-top:12px">Creador, agencia o cliente</h3><p>Aporta audiencia, experiencia o un caso real. Debe aprobar publicación y permitir reutilización del material acordado.</p></article>
+          </div>
+
+          <div class="section-head"><div><h2>Regla de capacidad</h2></div></div>
+          <div class="warning"><strong>Si no existe apoyo comercial:</strong> mantener Instagram, TikTok, LinkedIn y email; reducir Apollo a 8 contactos diarios; trabajar solo una colaboración semanal; y priorizar agencias sobre volumen de marcas. La calidad de la ejecución vale más que completar una cifra imposible.</div>
+
+          <div class="section-head"><div><h2>Matriz rápida de producción</h2></div></div>
+          <div class="task-table">
+            <table style="min-width:760px"><thead><tr><th>Actividad</th><th>Camila</th><th>Santiago</th><th>Apoyo</th></tr></thead><tbody>
+              <tr><td class="task-name">Estrategia y calendario</td><td>Responsable</td><td>Consultado</td><td>—</td></tr>
+              <tr><td class="task-name">Guiones y hooks</td><td>Responsable</td><td>Valida voz</td><td>Producto valida datos</td></tr>
+              <tr><td class="task-name">Grabación</td><td>Dirección, cámara y producción</td><td>Vocero en cámara</td><td>Invitado cuando aplique</td></tr>
+              <tr><td class="task-name">Edición y diseño</td><td>Responsable</td><td>—</td><td>—</td></tr>
+              <tr><td class="task-name">Publicación y comunidad</td><td>Responsable</td><td>Puede responder desde su perfil</td><td>—</td></tr>
+              <tr><td class="task-name">Email</td><td>Responsable completa</td><td>Puede firmar/validar</td><td>Producto aporta prueba</td></tr>
+              <tr><td class="task-name">Apollo y CRM</td><td>Dirección y copy</td><td>Entra en reuniones clave</td><td>BDR opera</td></tr>
+              <tr><td class="task-name">Partners</td><td>Materiales y comunicación</td><td>Vocero/reuniones clave</td><td>BDR hace seguimiento</td></tr>
+              <tr><td class="task-name">Casos y testimonios</td><td>Historia y diseño</td><td>Presenta en cámara</td><td>CS + cliente entregan evidencia</td></tr>
+            </tbody></table>
+          </div>
+        </section>
+
+        <footer class="footer-note"><span>Panza · Dashboard operativo de mercadeo</span><span>Octubre 2026 · Actualizado con la información disponible al 27 de septiembre</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">Texto copiado</div>
+  <script src="content.js"></script>
+  <script>
+    const tasks = [
+      {id:'o01',date:'2026-10-01',week:'Semana 1',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Camila: guion, dirección, edición y publicación · Santiago: cámara',title:'Reel: Un programa de puntos no arregla una mala estrategia',detail:'Video de apertura del mes. Adaptar hook y ritmo para cada plataforma.',kpi:'Guardados, compartidos y DMs'},
+      {id:'o02',date:'2026-10-01',week:'Semana 1',channel:'Estrategia',front:'Medición',owner:'Camila',support:'Apoyo: acceso a analíticas',title:'Configurar tablero de métricas y enlaces UTM',detail:'Definir fuente por canal, colaboración, Apollo y partner.',kpi:'100% de fuentes identificables'},
+      {id:'o03',date:'2026-10-02',week:'Semana 1',channel:'Influencers',front:'Distribución',owner:'Camila',support:'Apoyo puntual: investigación',title:'Construir lista de 20 aliados potenciales',detail:'Microcreadores B2B, agencias con vocero y comunidades de e-commerce.',kpi:'20 perfiles priorizados'},
+      {id:'o04',date:'2026-10-03',week:'Semana 1',channel:'Instagram + LinkedIn',front:'Autoridad',owner:'Camila',support:'Diseño y copy: Camila',title:'Carrusel: 5 señales de que dependes de clientes nuevos',detail:'Versión visual para Instagram y adaptación profesional para LinkedIn.',kpi:'Guardados y visitas al perfil'},
+      {id:'o05',date:'2026-10-05',week:'Semana 2',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Santiago: cámara · Camila: resto del flujo',title:'Reel: Tu cliente no necesita otro descuento del 10%',detail:'Contrastar descuento permanente con recompensa estratégica.',kpi:'Retención y compartidos'},
+      {id:'o06',date:'2026-10-05',week:'Semana 2',channel:'Apollo',front:'Adquisición',owner:'BDR / comercial',support:'Camila: criterios, copy y QA',title:'Cargar primera lista de 70 marcas Shopify',detail:'Belleza, bienestar, moda y categorías con recompra natural.',kpi:'70 cuentas verificadas'},
+      {id:'o07',date:'2026-10-06',week:'Semana 2',channel:'LinkedIn',front:'Autoridad',owner:'Camila + Santiago',support:'Camila: ghostwriting · Santiago: validación',title:'Post: Crecer no es volver a comprar clientes todos los meses',detail:'Opinión de fundador sobre adquisición y retención.',kpi:'Comentarios sustanciales'},
+      {id:'o08',date:'2026-10-06',week:'Semana 2',channel:'Influencers',front:'Distribución',owner:'Camila',support:'Aliado externo: respuesta y agenda',title:'Contactar a los primeros 5 aliados',detail:'Mensaje personalizado con propuesta de Auditoría de recompra.',kpi:'2 respuestas calificadas'},
+      {id:'o09',date:'2026-10-07',week:'Semana 2',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Producto valida lógica de recompensas',title:'Video: ¿Qué debería premiar una marca de belleza?',detail:'Ejemplo concreto sin inventar datos del negocio.',kpi:'Comentarios de marcas'},
+      {id:'o10',date:'2026-10-08',week:'Semana 2',channel:'Email',front:'Conversión',owner:'Camila',support:'Producto/CS: insumos técnicos',title:'Email 1: El problema no empieza con los puntos',detail:'Diagnóstico previo: comportamiento, recompensa y comunicación.',kpi:'Respuestas y diagnósticos'},
+      {id:'o11',date:'2026-10-08',week:'Semana 2',channel:'Apollo',front:'Adquisición',owner:'BDR / comercial',support:'Camila: supervisión',title:'Lanzar secuencia de marcas — lote 1',detail:'14–18 contactos diarios; observación real antes de presentar Panza.',kpi:'Respuesta positiva'},
+      {id:'o12',date:'2026-10-09',week:'Semana 2',channel:'Instagram + LinkedIn',front:'Prueba',owner:'Camila + Santiago',support:'Producto/CS: aprendizajes reales',title:'Panza en cámara: aprendizajes diseñando lealtad',detail:'Contenido humano con un aprendizaje verificable del trabajo con tiendas.',kpi:'Conversaciones calificadas'},
+      {id:'o13',date:'2026-10-10',week:'Semana 2',channel:'Grabación',front:'Producción',owner:'Camila + Santiago',support:'Camila: dirección · Santiago: cámara',title:'Bloque de grabación A — semana 3',detail:'Grabar 4 videos verticales y recursos de apoyo en 90 minutos.',kpi:'4 videos utilizables'},
+      {id:'o14',date:'2026-10-11',week:'Semana 2',channel:'Instagram',front:'Engagement',owner:'Camila',support:'Comunidad: respuestas de audiencia',title:'Historias: descuento, regalo, envío o experiencia VIP',detail:'Encuesta y caja de preguntas para alimentar próximos videos.',kpi:'Respuestas y preguntas'},
+      {id:'o15',date:'2026-10-12',week:'Semana 3',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Santiago: cámara',title:'Reel: Así analizaría tu recompra en 15 minutos',detail:'Mostrar el marco del diagnóstico sin prometer una solución universal.',kpi:'DMs con palabra RECOMPRA'},
+      {id:'o16',date:'2026-10-12',week:'Semana 3',channel:'Partners',front:'Adquisición',owner:'BDR / comercial',support:'Camila: segmentación y mensaje',title:'Construir lista de 60 agencias prioritarias',detail:'Shopify, desarrollo, performance, email, CRM, CRO y automatización.',kpi:'60 contactos verificados'},
+      {id:'o17',date:'2026-10-13',week:'Semana 3',channel:'LinkedIn',front:'Partners',owner:'Camila + Santiago',support:'Santiago: validación y publicación',title:'Post: Cómo una agencia puede ofrecer lealtad sin desarrollarla',detail:'Explicar tecnología, acompañamiento y relación agencia-cliente.',kpi:'Reuniones de partners'},
+      {id:'o18',date:'2026-10-13',week:'Semana 3',channel:'Influencers',front:'Distribución',owner:'Camila',support:'Aliado: selección de marca',title:'Cerrar primera colaboración y elegir tienda',detail:'Acordar formato, fecha, CTA, permisos y reutilización.',kpi:'1 colaboración confirmada'},
+      {id:'o19',date:'2026-10-14',week:'Semana 3',channel:'Instagram + LinkedIn',front:'Autoridad',owner:'Camila',support:'Producto: validación',title:'Carrusel: Anatomía de un programa de recompra',detail:'Acción, puntos, recompensa, comunicación y retorno.',kpi:'Guardados y clics'},
+      {id:'o20',date:'2026-10-15',week:'Semana 3',channel:'Email',front:'Conversión',owner:'Camila',support:'Producto/CS: ejemplo real',title:'Email 2: ¿Cuántos puntos debería entregar una tienda?',detail:'Responder según categoría, margen, ticket y frecuencia.',kpi:'Respuestas con datos de tienda'},
+      {id:'o21',date:'2026-10-15',week:'Semana 3',channel:'Apollo',front:'Adquisición',owner:'BDR / comercial',support:'Camila: QA de mensajes',title:'Optimizar secuencia según respuestas del lote 1',detail:'No cambiar por aperturas; usar respuestas positivas y objeciones reales.',kpi:'Mejorar respuesta positiva'},
+      {id:'o22',date:'2026-10-16',week:'Semana 3',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Santiago: cámara',title:'Reel: Tres recompensas que no pondría en una tienda nueva',detail:'Pieza directa, específica y fácil de compartir.',kpi:'Compartidos'},
+      {id:'o23',date:'2026-10-17',week:'Semana 3',channel:'Grabación',front:'Producción',owner:'Camila + Santiago',support:'Invitado si aplica',title:'Bloque de grabación B — auditoría',detail:'Grabar introducción, análisis y CTA de la primera colaboración.',kpi:'1 pieza larga + 3 clips'},
+      {id:'o24',date:'2026-10-18',week:'Semana 3',channel:'Instagram + TikTok',front:'Distribución',owner:'Camila + Santiago',support:'Aliado: publicación colaborativa',title:'Invitación pública a Auditorías de recompra',detail:'Postulación simple; aclarar criterios y alcance.',kpi:'10 postulaciones calificadas'},
+      {id:'o25',date:'2026-10-19',week:'Semana 4',channel:'Instagram + LinkedIn',front:'Partners',owner:'Camila + Santiago',support:'Santiago: cámara',title:'Video: Las agencias ponen estrategia; Panza, infraestructura',detail:'Mensaje directo al ecosistema de servicios Shopify.',kpi:'DMs de agencias'},
+      {id:'o26',date:'2026-10-19',week:'Semana 4',channel:'Partners',front:'Adquisición',owner:'BDR / comercial',support:'Camila: copy y material',title:'Lanzar secuencia de partners',detail:'Propuesta de portafolio, comisión recurrente y acompañamiento.',kpi:'6 reuniones en el mes'},
+      {id:'o27',date:'2026-10-20',week:'Semana 4',channel:'LinkedIn',front:'Prueba',owner:'Camila + Santiago',support:'Producto/CS: evidencia',title:'Post: Construcción pública de la primera auditoría',detail:'Qué observamos, qué decidimos y qué no se puede asumir.',kpi:'Visitas de perfiles objetivo'},
+      {id:'o28',date:'2026-10-21',week:'Semana 4',channel:'Instagram + TikTok',front:'Distribución',owner:'Camila + Santiago',support:'Creador/agencia + marca auditada',title:'Publicar primera Auditoría de recompra',detail:'Publicación colaborativa con CTA y enlace medible.',kpi:'Leads y conversaciones por aliado'},
+      {id:'o29',date:'2026-10-22',week:'Semana 4',channel:'Email',front:'Prueba',owner:'Camila',support:'Marca auditada: aprobación',title:'Email 3: Así diseñaríamos la recompra de una marca',detail:'Convertir la auditoría en una historia breve con decisión estratégica.',kpi:'Clics a diagnóstico'},
+      {id:'o30',date:'2026-10-22',week:'Semana 4',channel:'Casos',front:'Prueba',owner:'Camila',support:'Producto/CS + cliente',title:'Solicitar 2 reseñas o testimonios',detail:'Activar cuando la tienda ya haya visto un momento de valor.',kpi:'2 pruebas publicables'},
+      {id:'o31',date:'2026-10-23',week:'Semana 4',channel:'Instagram + LinkedIn',front:'Partners',owner:'Camila',support:'Producto: validar funcionamiento',title:'Carrusel: Cómo funciona Partners Panza',detail:'Comisión, enlace, panel, acompañamiento y relación con cliente.',kpi:'Clics a página de partners'},
+      {id:'o32',date:'2026-10-24',week:'Semana 4',channel:'Grabación',front:'Producción',owner:'Camila + Santiago',support:'Camila: dirección',title:'Bloque de grabación C — respuestas y humor',detail:'Grabar FAQs, objeciones y situaciones de e-commerce.',kpi:'5 clips utilizables'},
+      {id:'o33',date:'2026-10-25',week:'Semana 4',channel:'Instagram + TikTok',front:'Engagement',owner:'Camila + Santiago',support:'Audiencia: preguntas reales',title:'Video respuestas: puntos, VIP y referidos',detail:'Responder la pregunta más útil recibida durante el mes.',kpi:'Comentarios y nuevas preguntas'},
+      {id:'o34',date:'2026-10-26',week:'Semana 5',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Santiago: cámara',title:'Reel: Si toda tu recompra depende de email, tienes un hueco',detail:'Explicar cómo lealtad y email se complementan.',kpi:'Compartidos y DMs'},
+      {id:'o35',date:'2026-10-26',week:'Semana 5',channel:'Apollo',front:'Adquisición',owner:'BDR / comercial',support:'Camila: revisión',title:'Lanzar lote final y recuperar interesados',detail:'Cierre de secuencias; separar no ahora de no interés.',kpi:'Reuniones agendadas'},
+      {id:'o36',date:'2026-10-27',week:'Semana 5',channel:'Email',front:'Partners',owner:'Camila',support:'BDR: lista segmentada',title:'Email Partners: Una nueva línea de ingresos',detail:'Solo agencias y consultores; comisión recurrente y acompañamiento.',kpi:'Reuniones de partners'},
+      {id:'o37',date:'2026-10-27',week:'Semana 5',channel:'Partners',front:'Conversión',owner:'BDR + Santiago',support:'Camila: presentación y materiales',title:'Realizar sesión corta para agencias interesadas',detail:'Explicar modelo, perfiles de cliente y siguiente paso.',kpi:'2 partners activados'},
+      {id:'o38',date:'2026-10-28',week:'Semana 5',channel:'Instagram + TikTok',front:'Distribución',owner:'Camila + Santiago',support:'Segundo aliado',title:'Segunda auditoría o análisis colaborativo',detail:'Repetir solo si la primera produjo señales calificadas.',kpi:'Leads calificados'},
+      {id:'o39',date:'2026-10-29',week:'Semana 5',channel:'Email',front:'Conversión',owner:'Camila',support:'Producto valida ejemplos',title:'Email 4: Más descuentos no es más lealtad',detail:'Comparar descuento, recompensa, referido y nivel VIP.',kpi:'Demos solicitadas'},
+      {id:'o40',date:'2026-10-29',week:'Semana 5',channel:'LinkedIn',front:'Autoridad',owner:'Camila + Santiago',support:'Santiago: validación',title:'Post: Qué aprendimos hablando con marcas y agencias',detail:'Aprendizajes concretos sin inflar resultados.',kpi:'Conversaciones B2B'},
+      {id:'o41',date:'2026-10-30',week:'Semana 5',channel:'Instagram + TikTok',front:'Engagement',owner:'Camila + Santiago',support:'Santiago: cámara',title:'Reel: Situaciones que solo entiende quien maneja un e-commerce',detail:'Humor basado en fricciones reales, no trend desconectado.',kpi:'Compartidos'},
+      {id:'o42',date:'2026-10-31',week:'Semana 5',channel:'Instagram + LinkedIn',front:'Medición',owner:'Camila + Santiago',support:'Analíticas + Producto/CS',title:'Recap: Qué construimos y aprendimos en octubre',detail:'Cerrar el mes con números disponibles, decisiones y próximo foco.',kpi:'Resultados + aprendizaje documentado'},
+      {id:'o43',date:'2026-10-31',week:'Semana 5',channel:'Estrategia',front:'Medición',owner:'Camila',support:'Santiago + BDR + Producto/CS',title:'Revisión mensual y decisión sobre noviembre',detail:'Elegir 2 formatos, 1 canal comercial y aliados a repetir. Evaluar, no lanzar, el futuro bootcamp.',kpi:'Plan de noviembre aprobado'},
+      {id:'o44',date:'2026-10-05',week:'Semana 2',channel:'Radar',front:'Inteligencia',owner:'Camila',support:'45 minutos · validar fuentes antes de decidir',title:'Revisión semanal del Radar — edición 1',detail:'Elegir un hallazgo verificable y convertirlo en una decisión para contenido, ventas o partners.',kpi:'1 decisión calendarizada'},
+      {id:'o45',date:'2026-10-06',week:'Semana 2',channel:'Casos',front:'Prueba',owner:'Camila',support:'Producto/CS + cliente autorizan dato y contexto',title:'Obtener un dato real para una pieza educativa',detail:'Seleccionar ticket promedio, recompra, participación o comportamiento verificable. Documentar fuente, periodo y permiso.',kpi:'1 dato aprobado y publicable'},
+      {id:'o46',date:'2026-10-12',week:'Semana 3',channel:'Radar',front:'Inteligencia',owner:'Camila',support:'45 minutos · Santiago valida implicación editorial',title:'Revisión semanal del Radar — edición 2',detail:'Revisar competencia, benchmarks y búsqueda social. Escoger una sola acción.',kpi:'1 decisión calendarizada'},
+      {id:'o47',date:'2026-10-19',week:'Semana 4',channel:'Radar',front:'Inteligencia',owner:'Camila',support:'45 minutos · BDR aporta objeciones comerciales',title:'Revisión semanal del Radar — edición 3',detail:'Cruzar señales externas con conversaciones reales de marcas y agencias.',kpi:'1 decisión respaldada por mercado'},
+      {id:'o48',date:'2026-10-26',week:'Semana 5',channel:'Radar',front:'Inteligencia',owner:'Camila',support:'45 minutos · preparar aprendizaje para noviembre',title:'Revisión semanal del Radar — edición 4',detail:'Determinar qué tendencia, competidor o formato merece continuidad en noviembre.',kpi:'1 decisión para el próximo mes'},
+      {id:'o49',date:'2026-10-07',week:'Semana 2',channel:'Email Clientes',front:'Customer Education',owner:'Camila',support:'Producto/CS valida enlaces y configuración',title:'Clientes 1: Tu plan está activo; ahora hagamos que la gente lo use',detail:'Educar sobre visibilidad del programa en tienda, postcompra y canales de la marca.',kpi:'Clics al panel y acciones de configuración'},
+      {id:'o50',date:'2026-10-14',week:'Semana 3',channel:'Email Clientes',front:'Customer Education',owner:'Camila',support:'Producto/CS valida ejemplos de recompensas',title:'Clientes 2: Tres recompensas que pueden mover una segunda compra',detail:'Ayudar a elegir recompensas sostenibles según margen, ticket y conducta objetivo.',kpi:'Clics a configuración de recompensas'},
+      {id:'o51',date:'2026-10-21',week:'Semana 4',channel:'Email Clientes',front:'Customer Education',owner:'Camila',support:'Producto/CS aporta guía o plantilla',title:'Clientes 3: Una activación de marca para lanzar esta semana',detail:'Proponer una campaña simple de siete días para activar el uso del programa.',kpi:'Clics a guía y respuestas de tiendas'},
+      {id:'o52',date:'2026-10-28',week:'Semana 5',channel:'Email Clientes',front:'Customer Education',owner:'Camila',support:'Producto/CS valida métricas disponibles',title:'Clientes 4: Qué revisar cada mes para saber si tu plan funciona',detail:'Revisar participación, redención, recompra y comunicación para decidir una mejora.',kpi:'Visitas al panel y mejoras registradas'}
+    ];
+
+    const viewTitles = {resumen:'Resumen mensual',pendientes:'Pendientes del mes',calendario:'Calendario maestro',redes:'Redes sociales',influencers:'Influencers y aliados',partners:'Programa de partners',apollo:'Apollo y prospección',email:'Email marketing',biblioteca:'Guiones y copys',radar:'Radar semanal',equipo:'Equipo y capacidad'};
+    const progressKey = 'panza-oct-2026-completed';
+    const progressMigrationKey = 'panza-oct-2026-email-progress-v1';
+    const completed = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
+    if(!localStorage.getItem(progressMigrationKey)){
+      ['o10','o20','o29','o39'].forEach(id=>completed.add(id));
+      localStorage.setItem(progressKey,JSON.stringify([...completed]));
+      localStorage.setItem(progressMigrationKey,'1');
+    }
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    const fmt = d => new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'short'}).format(new Date(d+'T12:00:00'));
+
+    function go(view) {
+      $$('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
+      $$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+      $('#viewTitle').textContent=viewTitles[view]||'Dashboard';
+      $('#sidebar').classList.remove('open');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    $$('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
+    $$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+    $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
+
+    function selectOptions(id, values) {
+      const el=$(id); [...new Set(values)].sort().forEach(v=>el.insertAdjacentHTML('beforeend',`<option value="${v}">${v}</option>`));
+    }
+    selectOptions('#filterChannel',tasks.map(t=>t.channel));
+    selectOptions('#filterFront',tasks.map(t=>t.front));
+    selectOptions('#filterOwner',tasks.map(t=>t.owner));
+    selectOptions('#filterWeek',tasks.map(t=>t.week));
+    selectOptions('#pendingChannel',tasks.map(t=>t.channel));
+    $('#countAll').textContent=tasks.length;
+
+    function saveProgress(){
+      localStorage.setItem(progressKey,JSON.stringify([...completed]));
+      renderTasks();
+      renderProgress();
+      renderPendings();
+    }
+
+    function renderPendings(){
+      const q=$('#pendingSearch').value.trim().toLowerCase();
+      const status=$('#pendingStatus').value;
+      const channel=$('#pendingChannel').value;
+      const owner=$('#pendingOwner').value;
+      const list=tasks.filter(t=>(!q||Object.values(t).join(' ').toLowerCase().includes(q))&&(!channel||t.channel===channel)&&(!owner||(t.owner+' '+t.support).includes(owner))&&(!status||(status==='done')===completed.has(t.id)));
+      const done=tasks.filter(t=>completed.has(t.id)).length;
+      const pct=Math.round(done/tasks.length*100);
+      const emailTasks=tasks.filter(t=>t.channel==='Email');
+      const emailDone=emailTasks.filter(t=>completed.has(t.id)).length;
+      const clientEmailTasks=tasks.filter(t=>t.channel==='Email Clientes');
+      const clientEmailDone=clientEmailTasks.filter(t=>completed.has(t.id)).length;
+      $('#overallOrb').style.setProperty('--pct',pct);
+      $('#overallPct').textContent=`${pct}%`;
+      $('#doneCount').textContent=done;
+      $('#pendingCount').textContent=tasks.length-done;
+      $('#emailDoneCount').textContent=`${emailDone}/${emailTasks.length}`;
+      $('#clientEmailDoneCount').textContent=`${clientEmailDone}/${clientEmailTasks.length}`;
+      $('#countPending').textContent=tasks.length-done;
+      $('#overallLabel').textContent=pct===100?'Mes completado':pct>=60?'El plan ya está andando':pct>=25?'Buen ritmo':'Empezando el mes';
+      $('#overallCopy').textContent=emailDone>=4?'Los cuatro correos principales ya están listos y montados. Ahora el foco puede pasar a distribución y seguimiento.':'Cada check mueve el plan de intención a ejecución.';
+      const weeks=['Semana 1','Semana 2','Semana 3','Semana 4','Semana 5'];
+      const ranges={'Semana 1':'1–4 oct','Semana 2':'5–11 oct','Semana 3':'12–18 oct','Semana 4':'19–25 oct','Semana 5':'26–31 oct'};
+      $('#pendingList').innerHTML=weeks.map(week=>{
+        const group=list.filter(t=>t.week===week);
+        if(!group.length) return '';
+        const ready=group.filter(t=>completed.has(t.id)).length;
+        return `<section class="pending-week"><div class="pending-week-head"><div><strong>${week}</strong><span> · ${ranges[week]}</span></div><span>${ready} de ${group.length} listas</span></div>${group.map(t=>`<div class="pending-row ${completed.has(t.id)?'done':''}" data-id="${t.id}"><input class="pending-check" type="checkbox" ${completed.has(t.id)?'checked':''} aria-label="Marcar ${t.title}"><div class="pending-date">${fmt(t.date)}</div><div><div class="pending-title">${t.title}</div><div class="pending-meta">${t.channel} · ${t.front}<br>${t.detail}</div></div><div class="pending-owner"><strong>${t.owner}</strong><span>${t.kpi}</span></div><span class="status-pill ${completed.has(t.id)?'ready':''}">${completed.has(t.id)?'Listo':'Pendiente'}</span></div>`).join('')}</section>`;
+      }).join('');
+      $('#pendingEmpty').style.display=list.length?'none':'block';
+      $$('#pendingList .pending-check').forEach(check=>check.addEventListener('change',e=>{
+        const id=e.target.closest('.pending-row').dataset.id;
+        e.target.checked?completed.add(id):completed.delete(id);
+        saveProgress();
+      }));
+    }
+    $$('#pendingSearch, #pendingStatus, #pendingChannel, #pendingOwner').forEach(el=>el.addEventListener('input',renderPendings));
+    $('#myPendingBtn').addEventListener('click',()=>{
+      $('#pendingStatus').value='pending';
+      $('#pendingOwner').value='Camila';
+      renderPendings();
+    });
+
+    function taskRows(list, compact=false) {
+      if(compact) return `<div class="task-table"><table><thead><tr><th>Fecha</th><th>Tarea</th><th>Responsables</th><th>KPI</th></tr></thead><tbody>${list.slice(0,7).map(t=>`<tr><td class="date">${fmt(t.date)}</td><td><div class="task-name">${t.title}</div><div class="task-detail">${t.detail}</div></td><td><div class="owner-stack"><strong>${t.owner}</strong><span>${t.support}</span></div></td><td class="kpi">${t.kpi}</td></tr>`).join('')}</tbody></table></div>`;
+      return list.map(t=>`<tr data-id="${t.id}" class="${completed.has(t.id)?'done':''}"><td><input class="check" type="checkbox" ${completed.has(t.id)?'checked':''} aria-label="Marcar ${t.title}"></td><td class="date">${fmt(t.date)}</td><td><div class="task-name">${t.title}</div><div class="task-detail">${t.detail}</div></td><td><span class="tag">${t.channel}</span></td><td><span class="tag ${t.front==='Distribución'?'pink':t.front==='Conversión'?'amber':''}">${t.front}</span></td><td><div class="owner-stack"><strong>${t.owner}</strong><span>${t.support}</span></div></td><td class="kpi">${t.kpi}</td></tr>`).join('');
+    }
+
+    let activePreset = '';
+    let calendarMode = 'list';
+    function getFilteredTasks(){
+      const q=$('#search').value.toLowerCase();
+      const channel=$('#filterChannel').value,front=$('#filterFront').value,owner=$('#filterOwner').value,week=$('#filterWeek').value;
+      return tasks.filter(t=>(!activePreset||activePreset!=='social'||/Instagram|TikTok|LinkedIn|Grabación/.test(t.channel))&&(!channel||t.channel===channel)&&(!front||t.front===front)&&(!owner||t.owner===owner)&&(!week||t.week===week)&&(!q||Object.values(t).join(' ').toLowerCase().includes(q)));
+    }
+    function eventKind(channel){
+      if(/Instagram|TikTok|LinkedIn|Grabación/.test(channel)) return 'social';
+      if(/Email/.test(channel)) return 'email';
+      if(/Apollo|Partners/.test(channel)) return 'sales';
+      if(channel==='Radar') return 'radar';
+      return 'other';
+    }
+    function renderMonth(list){
+      const names=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+      const cells=[];
+      const start=new Date(2026,8,28,12,0,0);
+      for(let i=0;i<42;i++){
+        const d=new Date(start); d.setDate(start.getDate()+i);
+        const date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const dayTasks=list.filter(t=>t.date===date);
+        const outside=d.getMonth()!==9;
+        cells.push(`<div class="day-cell ${outside?'outside':''}"><div class="day-number"><strong>${d.getDate()}</strong>${dayTasks.length?`<span class="day-count">${dayTasks.length}</span>`:''}</div>${dayTasks.map(t=>`<button class="calendar-event ${completed.has(t.id)?'done':''}" data-task="${t.id}" data-kind="${eventKind(t.channel)}" title="${t.owner}: ${t.title}">${t.title}</button>`).join('')}</div>`);
+      }
+      $('#monthGrid').innerHTML=names.map(n=>`<div class="day-name">${n}</div>`).join('')+cells.join('');
+      $$('.calendar-event').forEach(b=>b.addEventListener('click',()=>{
+        activePreset='';
+        ['#filterChannel','#filterFront','#filterOwner','#filterWeek'].forEach(id=>$(id).value='');
+        $('#search').value=b.dataset.task;
+        setCalendarMode('list');
+        renderTasks();
+        $('#calendarList').scrollIntoView({behavior:'smooth',block:'start'});
+      }));
+    }
+    function renderTasks(){
+      const list=getFilteredTasks();
+      $('#taskBody').innerHTML=taskRows(list);
+      $('#visibleCount').textContent=`${list.length} ${list.length===1?'tarea':'tareas'}`;
+      $('#emptyState').style.display=list.length?'none':'block';
+      renderMonth(list);
+      $$('#taskBody .check').forEach(c=>c.addEventListener('change',e=>{
+        const row=e.target.closest('tr'),id=row.dataset.id;
+        e.target.checked?completed.add(id):completed.delete(id);
+        row.classList.toggle('done',e.target.checked);
+        saveProgress();
+      }));
+    }
+    $$('.filter-control').forEach(el=>el.addEventListener('input',()=>{activePreset='';renderTasks();}));
+    function setCalendarMode(mode){
+      calendarMode=mode;
+      $('#calendarList').style.display=mode==='list'?'block':'none';
+      $('#calendarMonth').classList.toggle('active',mode==='month');
+      $$('.view-switch').forEach(b=>b.classList.toggle('active',b.dataset.calendarView===mode));
+    }
+    $$('.view-switch').forEach(b=>b.addEventListener('click',()=>setCalendarMode(b.dataset.calendarView)));
+
+    function renderProgress(){
+      const groups=[
+        ['Contenido y autoridad',tasks.filter(t=>['Instagram + TikTok','Instagram + LinkedIn','Instagram','LinkedIn','Grabación'].includes(t.channel))],
+        ['Adquisición directa',tasks.filter(t=>['Apollo','Partners'].includes(t.channel))],
+        ['Conversión y prueba',tasks.filter(t=>['Email','Email Clientes','Casos','Estrategia'].includes(t.channel))],
+        ['Inteligencia semanal',tasks.filter(t=>t.channel==='Radar')]
+      ];
+      $('#progressCards').innerHTML=groups.map(([name,list])=>{
+        const done=list.filter(t=>completed.has(t.id)).length,pct=list.length?Math.round(done/list.length*100):0;
+        return `<div class="card"><h3>${name}</h3><div class="progress-wrap"><div class="progress-meta"><span>${done} de ${list.length} tareas</span><strong>${pct}%</strong></div><div class="progress"><span style="width:${pct}%"></span></div></div></div>`;
+      }).join('');
+    }
+
+    function renderWeeks(){
+      const weeks=['Semana 1','Semana 2','Semana 3','Semana 4','Semana 5'];
+      const ranges=['1–4 oct','5–11 oct','12–18 oct','19–25 oct','26–31 oct'];
+      $('#weekGrid').innerHTML=weeks.map((w,i)=>`<div class="week"><div class="week-head"><strong>${w}</strong><span>${ranges[i]}</span></div><div class="week-body">${tasks.filter(t=>t.week===w).slice(0,6).map(t=>`<div class="mini-task" data-channel="${t.channel}"><strong>${t.title}</strong><span>${fmt(t.date)} · ${t.channel}</span></div>`).join('')}</div></div>`).join('');
+    }
+
+    function preview(id,list){$(id).innerHTML=taskRows(list,true)}
+    preview('#socialTaskPreview',tasks.filter(t=>/Instagram|TikTok|LinkedIn|Grabación/.test(t.channel)));
+    preview('#influencerTaskPreview',tasks.filter(t=>t.channel==='Influencers'));
+    preview('#partnerTaskPreview',tasks.filter(t=>t.channel==='Partners'||t.front==='Partners'));
+    preview('#apolloTaskPreview',tasks.filter(t=>t.channel==='Apollo'));
+    preview('#emailTaskPreview',tasks.filter(t=>t.channel==='Email'));
+    preview('#clientEmailTaskPreview',tasks.filter(t=>t.channel==='Email Clientes'));
+    preview('#radarTaskPreview',tasks.filter(t=>t.channel==='Radar'));
+
+    function copyText(value){
+      navigator.clipboard.writeText(value).then(()=>{
+        const toast=$('#toast');
+        toast.classList.add('show');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);
+      });
+    }
+    function assetOptions(id, values){
+      const el=$(id);
+      [...new Set(values)].sort().forEach(v=>el.insertAdjacentHTML('beforeend',`<option value="${v}">${v}</option>`));
+    }
+    assetOptions('#assetChannel',contentAssets.map(a=>a.channel));
+    assetOptions('#assetType',contentAssets.map(a=>a.type));
+    $('#assetTotal').textContent=contentAssets.length;
+    $('#countAssets').textContent=contentAssets.length;
+    function renderAssets(){
+      const q=$('#assetSearch').value.toLowerCase();
+      const channel=$('#assetChannel').value;
+      const type=$('#assetType').value;
+      const list=contentAssets.filter(a=>(!channel||a.channel===channel)&&(!type||a.type===type)&&(!q||[a.title,a.channel,a.type,a.owner,...a.sections.map(s=>s.label+' '+s.text)].join(' ').toLowerCase().includes(q)));
+      $('#assetVisible').textContent=`${list.length} ${list.length===1?'pieza':'piezas'}`;
+      $('#assetGrid').innerHTML=list.length?list.map(a=>`<article class="asset-card"><div class="asset-head"><div><span class="tag ${a.channel.includes('Email')?'amber':a.channel.includes('Instagram')?'pink':''}">${a.channel}</span><h3>${a.title}</h3><div class="asset-meta">${fmt(a.date)} · ${a.type}<br>${a.owner}</div></div><div class="asset-actions"><button class="btn copy-all" data-asset="${a.id}">Copiar todo</button><button class="btn open-task" data-task="${a.taskId}">Ver tarea</button></div></div><div class="asset-body">${a.sections.map((s,i)=>`<div class="copy-block"><div class="copy-label"><span>${s.label}</span><button class="copy-one" data-asset="${a.id}" data-section="${i}">Copiar</button></div><div class="copy-text">${s.text}</div></div>`).join('')}</div></article>`).join(''):'<div class="library-empty">No hay textos que coincidan con estos filtros.</div>';
+      $$('.copy-one').forEach(b=>b.addEventListener('click',()=>{
+        const a=contentAssets.find(x=>x.id===b.dataset.asset);
+        copyText(a.sections[Number(b.dataset.section)].text);
+      }));
+      $$('.copy-all').forEach(b=>b.addEventListener('click',()=>{
+        const a=contentAssets.find(x=>x.id===b.dataset.asset);
+        copyText(`${a.title}\n\n`+a.sections.map(s=>`${s.label.toUpperCase()}\n${s.text}`).join('\n\n'));
+      }));
+      $$('.open-task').forEach(b=>b.addEventListener('click',()=>{
+        activePreset='';
+        $('#search').value=b.dataset.task;
+        renderTasks();
+        go('calendario');
+      }));
+    }
+    $$('#assetSearch, #assetChannel, #assetType').forEach(el=>el.addEventListener('input',renderAssets));
+    renderAssets();
+
+    $$('[data-filter-go]').forEach(btn=>btn.addEventListener('click',()=>{
+      const f=btn.dataset.filterGo;
+      $('#search').value=''; $('#filterFront').value=''; $('#filterOwner').value=''; $('#filterWeek').value='';
+      if(f==='social'){ $('#filterChannel').value=''; activePreset='social'; }
+      else { $('#filterChannel').value=f; }
+      renderTasks(); go('calendario');
+    }));
+    $('#resetBtn').addEventListener('click',()=>{
+      if(confirm('¿Quieres borrar todo el progreso marcado en este dashboard?')){completed.clear();localStorage.setItem(progressKey,'[]');localStorage.setItem(progressMigrationKey,'1');renderTasks();renderProgress();renderPendings();}
+    });
+
+    renderTasks(); renderProgress(); renderWeeks(); renderPendings();
+  </script>
+</body>
+</html>
