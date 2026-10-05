@@ -194,7 +194,7 @@
     .pending-week-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); }
     .pending-week-head strong { font-size:13px; }
     .pending-week-head span { color:var(--muted); font-size:10px; }
-    .pending-row { display:grid; grid-template-columns:32px 72px minmax(240px,1fr) 150px 110px; gap:12px; align-items:center; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,.055); transition:.18s ease; }
+    .pending-row { display:grid; grid-template-columns:32px 72px minmax(240px,1fr) 150px 110px 34px; gap:12px; align-items:center; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,.055); transition:.18s ease; cursor:pointer; }
     .pending-row:last-child { border-bottom:0; }
     .pending-row:hover { background:rgba(255,255,255,.025); }
     .pending-row.done { opacity:.52; }
@@ -205,6 +205,8 @@
     .pending-meta { color:var(--muted); font-size:9px; margin-top:4px; line-height:1.45; }
     .pending-owner { font-size:10px; line-height:1.35; }
     .pending-owner span { display:block; color:var(--muted); margin-top:3px; }
+    .pending-open { width:30px; height:30px; border:1px solid var(--line); background:transparent; color:var(--amber); cursor:pointer; font-size:17px; display:grid; place-items:center; }
+    .pending-row:hover .pending-open { border-color:var(--amber); background:rgba(255,162,0,.08); }
     .status-pill { display:inline-flex; align-items:center; justify-content:center; padding:6px 9px; border:1px solid var(--line); color:var(--muted); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
     .status-pill.ready { border-color:rgba(79,224,171,.45); color:var(--success); background:rgba(79,224,171,.08); }
     .pending-empty { display:none; padding:34px 18px; border:1px dashed var(--line); color:var(--muted); text-align:center; }
@@ -307,6 +309,35 @@
     .toast { position: fixed; right: 24px; bottom: 24px; z-index: 50; background: var(--success); color: #09271f; padding: 12px 16px; font-size: 11px; font-weight: 800; transform: translateY(20px); opacity: 0; pointer-events: none; transition: .2s ease; }
     .toast.show { transform: translateY(0); opacity: 1; }
 
+    .task-dialog { width:min(920px,calc(100vw - 28px)); max-height:calc(100vh - 28px); padding:0; border:1px solid var(--line-strong); background:var(--recessed); color:white; box-shadow:0 24px 80px rgba(0,0,0,.72); }
+    .task-dialog::backdrop { background:rgba(8,1,11,.82); backdrop-filter:blur(7px); }
+    .task-dialog-shell { min-height:0; }
+    .task-dialog-head { position:sticky; top:0; z-index:3; display:flex; justify-content:space-between; gap:20px; align-items:flex-start; padding:22px 24px; border-bottom:1px solid var(--line); background:rgba(24,6,32,.97); }
+    .task-dialog-head h2 { margin:8px 0 0; font-size:27px; line-height:1.12; }
+    .task-dialog-close { width:38px; height:38px; flex:0 0 38px; border:1px solid var(--line); background:transparent; color:white; cursor:pointer; font-size:22px; }
+    .task-dialog-close:hover { border-color:var(--amber); color:var(--amber); }
+    .task-dialog-body { padding:24px; overflow:auto; }
+    .task-detail-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--line); margin-bottom:18px; }
+    .task-detail-stat { padding:15px; border-right:1px solid var(--line); background:var(--panel); }
+    .task-detail-stat:last-child { border-right:0; }
+    .task-detail-stat span { display:block; color:var(--muted); font-size:8px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; margin-bottom:6px; }
+    .task-detail-stat strong { display:block; font-size:11px; line-height:1.4; }
+    .task-brief { padding:18px; border-left:3px solid var(--amber); background:var(--panel); margin-bottom:18px; }
+    .task-brief strong { display:block; margin-bottom:7px; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--amber); }
+    .task-brief p { margin:0; color:#eadfed; line-height:1.6; }
+    .task-dialog-section { margin-top:22px; }
+    .task-dialog-section h3 { margin:0 0 10px; font-size:18px; }
+    .task-checklist { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:0; padding:0; list-style:none; }
+    .task-checklist li { padding:11px 12px 11px 34px; background:var(--panel); border:1px solid var(--line); position:relative; color:#eadfed; font-size:11px; line-height:1.45; }
+    .task-checklist li::before { content:'✓'; position:absolute; left:12px; top:10px; color:var(--success); font-weight:900; }
+    .task-copy-card { border:1px solid var(--line); background:var(--panel); margin-top:10px; }
+    .task-copy-head { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; padding:15px 16px; border-bottom:1px solid var(--line); }
+    .task-copy-head h4 { margin:6px 0 0; font-size:15px; }
+    .task-copy-sections { padding:2px 16px 14px; }
+    .task-no-copy { padding:16px; border:1px dashed var(--line); color:var(--muted); font-size:11px; line-height:1.55; }
+    .task-dialog-actions { position:sticky; bottom:0; display:flex; justify-content:space-between; gap:10px; align-items:center; padding:14px 24px; border-top:1px solid var(--line); background:rgba(24,6,32,.97); }
+    .task-dialog-actions .btn-primary { background:var(--amber); border-color:var(--amber); color:#1a0a1f; font-weight:800; }
+
     @media (max-width: 1180px) {
       .metrics { grid-template-columns: repeat(3,1fr); }
       .metric:nth-child(3) { border-right: 0; }
@@ -348,6 +379,12 @@
       .pending-toolbar { grid-template-columns:1fr; }
       .pending-row { grid-template-columns:30px 58px 1fr; }
       .pending-row .pending-owner, .pending-row .status-pill { grid-column:3; }
+      .pending-row .pending-open { grid-column:3; justify-self:end; grid-row:1; }
+      .task-detail-grid { grid-template-columns:repeat(2,1fr); }
+      .task-detail-stat:nth-child(2) { border-right:0; }
+      .task-detail-stat:nth-child(-n+2) { border-bottom:1px solid var(--line); }
+      .task-checklist { grid-template-columns:1fr; }
+      .task-dialog-head, .task-dialog-body, .task-dialog-actions { padding-left:17px; padding-right:17px; }
       .progress-orb-card { align-items:flex-start; }
       .progress-orb { width:100px; height:100px; flex-basis:100px; }
     }
@@ -679,6 +716,19 @@
     </main>
   </div>
 
+  <dialog class="task-dialog" id="taskDialog" aria-labelledby="taskDialogTitle">
+    <div class="task-dialog-shell">
+      <div class="task-dialog-head">
+        <div><span class="tag amber" id="taskDialogTag">Ficha de entrega</span><h2 id="taskDialogTitle"></h2></div>
+        <button class="task-dialog-close" id="taskDialogClose" aria-label="Cerrar ficha">×</button>
+      </div>
+      <div class="task-dialog-body" id="taskDialogBody"></div>
+      <div class="task-dialog-actions">
+        <button class="btn" id="taskDialogLibrary">Ver en guiones y copys</button>
+        <button class="btn btn-primary" id="taskDialogDone">Marcar como lista</button>
+      </div>
+    </div>
+  </dialog>
   <div class="toast" id="toast">Texto copiado</div>
   <script src="content.js"></script>
   <script>
@@ -805,7 +855,7 @@
         const group=list.filter(t=>t.week===week);
         if(!group.length) return '';
         const ready=group.filter(t=>completed.has(t.id)).length;
-        return `<section class="pending-week"><div class="pending-week-head"><div><strong>${week}</strong><span> · ${ranges[week]}</span></div><span>${ready} de ${group.length} listas</span></div>${group.map(t=>`<div class="pending-row ${completed.has(t.id)?'done':''}" data-id="${t.id}"><input class="pending-check" type="checkbox" ${completed.has(t.id)?'checked':''} aria-label="Marcar ${t.title}"><div class="pending-date">${fmt(t.date)}</div><div><div class="pending-title">${t.title}</div><div class="pending-meta">${t.channel} · ${t.front}<br>${t.detail}</div></div><div class="pending-owner"><strong>${t.owner}</strong><span>${t.kpi}</span></div><span class="status-pill ${completed.has(t.id)?'ready':''}">${completed.has(t.id)?'Listo':'Pendiente'}</span></div>`).join('')}</section>`;
+        return `<section class="pending-week"><div class="pending-week-head"><div><strong>${week}</strong><span> · ${ranges[week]}</span></div><span>${ready} de ${group.length} listas</span></div>${group.map(t=>`<div class="pending-row ${completed.has(t.id)?'done':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="Abrir ficha de ${t.title}"><input class="pending-check" type="checkbox" ${completed.has(t.id)?'checked':''} aria-label="Marcar ${t.title}"><div class="pending-date">${fmt(t.date)}</div><div><div class="pending-title">${t.title}</div><div class="pending-meta">${t.channel} · ${t.front}<br>${t.detail}</div></div><div class="pending-owner"><strong>${t.owner}</strong><span>${t.kpi}</span></div><span class="status-pill ${completed.has(t.id)?'ready':''}">${completed.has(t.id)?'Listo':'Pendiente'}</span><button class="pending-open" type="button" aria-label="Ver toda la información">›</button></div>`).join('')}</section>`;
       }).join('');
       $('#pendingEmpty').style.display=list.length?'none':'block';
       $$('#pendingList .pending-check').forEach(check=>check.addEventListener('change',e=>{
@@ -813,6 +863,10 @@
         e.target.checked?completed.add(id):completed.delete(id);
         saveProgress();
       }));
+      $$('#pendingList .pending-row').forEach(row=>{
+        row.addEventListener('click',e=>{ if(!e.target.classList.contains('pending-check')) openTaskDetail(row.dataset.id); });
+        row.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&!e.target.classList.contains('pending-check')){ e.preventDefault(); openTaskDetail(row.dataset.id); } });
+      });
     }
     $$('#pendingSearch, #pendingStatus, #pendingChannel, #pendingOwner').forEach(el=>el.addEventListener('input',renderPendings));
     $('#myPendingBtn').addEventListener('click',()=>{
@@ -919,6 +973,56 @@
         window.__toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);
       });
     }
+
+    const taskDialog=$('#taskDialog');
+    let activeTaskId='';
+    function deliveryChecklist(task){
+      if(/Email/.test(task.channel)) return ['Asunto y preheader revisados','Cuerpo y CTA finalizados','Segmento y remitente confirmados','Enlaces y parámetros de medición probados','Vista móvil y envío de prueba revisados','Correo programado para la fecha indicada'];
+      if(/Instagram|TikTok|LinkedIn/.test(task.channel)) return ['Hook y mensaje principal aprobados','Guion o estructura de slides listos','Grabación, diseño o recursos visuales completos','Edición y subtítulos revisados','Caption, CTA y hashtags preparados','Publicación programada y seguimiento de comentarios'];
+      if(task.channel==='Grabación') return ['Guiones priorizados y abiertos','Locación, luz, audio y vestuario preparados','Planos principales y recursos de apoyo grabados','Archivos nombrados y respaldados','Tomas seleccionadas para edición','Entregables confirmados contra el KPI'];
+      if(task.channel==='Influencers') return ['Perfil y audiencia validados','Mensaje personalizado enviado','Propuesta, formato y CTA acordados','Fecha y responsables confirmados','Permisos de uso del contenido definidos','Seguimiento y resultado registrados'];
+      if(/Apollo|Partners/.test(task.channel)) return ['Lista verificada y segmentada','Personalización y secuencia revisadas','Enlaces y material de apoyo listos','Contactos cargados sin duplicados','Respuestas y objeciones registradas','Próximo paso o reunión agendada'];
+      if(task.channel==='Casos') return ['Fuente y periodo del dato documentados','Permiso del cliente confirmado','Afirmaciones validadas por Producto/CS','Historia y aprendizaje redactados','Material visual o evidencia recopilados','Versión publicable aprobada'];
+      if(task.channel==='Radar') return ['Fuentes verificadas','Hallazgo resumido con contexto','Implicación para Panza definida','Una sola decisión elegida','Responsable y fecha asignados','Decisión añadida al calendario'];
+      return ['Objetivo y resultado esperado confirmados','Insumos y accesos disponibles','Responsables y apoyos alineados','Entregable revisado','Resultado registrado','Siguiente acción definida'];
+    }
+    function openTaskDetail(id){
+      const task=tasks.find(t=>t.id===id);
+      if(!task) return;
+      activeTaskId=id;
+      const assets=contentAssets.filter(a=>a.taskId===id);
+      $('#taskDialogTag').textContent=`${task.channel} · ${task.front}`;
+      $('#taskDialogTitle').textContent=task.title;
+      $('#taskDialogBody').innerHTML=`
+        <div class="task-detail-grid">
+          <div class="task-detail-stat"><span>Cuándo</span><strong>${fmt(task.date)} · ${task.week}</strong></div>
+          <div class="task-detail-stat"><span>Responsable</span><strong>${task.owner}</strong></div>
+          <div class="task-detail-stat"><span>Apoyo necesario</span><strong>${task.support}</strong></div>
+          <div class="task-detail-stat"><span>Cómo medimos</span><strong>${task.kpi}</strong></div>
+        </div>
+        <div class="task-brief"><strong>Qué vamos a entregar</strong><p>${task.detail}</p></div>
+        <section class="task-dialog-section"><h3>Todo lo necesario para entregarlo</h3><ul class="task-checklist">${deliveryChecklist(task).map(item=>`<li>${item}</li>`).join('')}</ul></section>
+        <section class="task-dialog-section"><h3>${assets.length?'Copys, guiones y textos':'Textos de esta tarea'}</h3>${assets.length?assets.map(a=>`<article class="task-copy-card"><div class="task-copy-head"><div><span class="tag ${a.channel.includes('Email')?'amber':a.channel.includes('Instagram')?'pink':''}">${a.type}</span><h4>${a.title}</h4></div><button class="btn task-copy-all" data-asset="${a.id}">Copiar todo</button></div><div class="task-copy-sections">${a.sections.map((s,i)=>`<div class="copy-block"><div class="copy-label"><span>${s.label}</span><button class="copy-one task-copy-one" data-asset="${a.id}" data-section="${i}">Copiar</button></div><div class="copy-text">${s.text}</div></div>`).join('')}</div></article>`).join(''):`<div class="task-no-copy">Esta es una tarea operativa y no tiene un copy asociado en la biblioteca. La ficha reúne el objetivo, responsables, fecha, medición y checklist necesarios para completarla sin inventar textos que no corresponden.</div>`}</section>`;
+      $('#taskDialogLibrary').style.display=assets.length?'inline-flex':'none';
+      $('#taskDialogDone').textContent=completed.has(id)?'Marcar como pendiente':'Marcar como lista';
+      $$('.task-copy-one').forEach(b=>b.addEventListener('click',()=>{const a=contentAssets.find(x=>x.id===b.dataset.asset);copyText(a.sections[Number(b.dataset.section)].text);}));
+      $$('.task-copy-all').forEach(b=>b.addEventListener('click',()=>{const a=contentAssets.find(x=>x.id===b.dataset.asset);copyText(`${a.title}\n\n`+a.sections.map(s=>`${s.label.toUpperCase()}\n${s.text}`).join('\n\n'));}));
+      taskDialog.showModal();
+    }
+    $('#taskDialogClose').addEventListener('click',()=>taskDialog.close());
+    taskDialog.addEventListener('click',e=>{if(e.target===taskDialog)taskDialog.close();});
+    $('#taskDialogDone').addEventListener('click',()=>{
+      completed.has(activeTaskId)?completed.delete(activeTaskId):completed.add(activeTaskId);
+      saveProgress();
+      taskDialog.close();
+    });
+    $('#taskDialogLibrary').addEventListener('click',()=>{
+      const asset=contentAssets.find(a=>a.taskId===activeTaskId);
+      taskDialog.close();
+      go('biblioteca');
+      $('#assetSearch').value=asset?asset.title:'';
+      renderAssets();
+    });
     function assetOptions(id, values){
       const el=$(id);
       [...new Set(values)].sort().forEach(v=>el.insertAdjacentHTML('beforeend',`<option value="${v}">${v}</option>`));
