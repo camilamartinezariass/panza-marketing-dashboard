@@ -101,10 +101,26 @@
     .topbar-title strong { font-family: var(--display); font-size: 23px; line-height: 1; }
     .topbar-title span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
     .top-actions { display: flex; gap: 8px; align-items: center; }
+    .sync-status { display:inline-flex; align-items:center; gap:7px; padding:9px 11px; border:1px solid var(--line-strong); color:var(--muted); font-size:11px; font-weight:800; white-space:nowrap; }
+    .sync-status::before { content:''; width:7px; height:7px; border-radius:50%; background:#8c7894; box-shadow:0 0 0 3px rgba(140,120,148,.12); }
+    .sync-status[data-state="shared"] { color:#dfffe9; border-color:rgba(84,222,132,.35); }
+    .sync-status[data-state="shared"]::before { background:#54de84; box-shadow:0 0 0 3px rgba(84,222,132,.12); }
+    .sync-status[data-state="connecting"]::before { background:var(--amber); animation:pulse 1s infinite alternate; }
+    .sync-status[data-state="offline"]::before { background:#ff5a79; }
+    @keyframes pulse { to { opacity:.35; } }
     .btn { border: 1px solid var(--line-strong); background: transparent; color: white; padding: 10px 13px; cursor: pointer; font-weight: 700; }
     .btn:hover { border-color: var(--amber); }
     .btn-primary { background: var(--amber); color: #1a0a1f; border-color: var(--amber); }
     .mobile-menu { display: none; }
+    .auth-dialog { width:min(520px,calc(100vw - 28px)); padding:0; border:1px solid var(--line-strong); background:var(--panel); color:white; }
+    .auth-dialog::backdrop { background:rgba(8,1,12,.82); backdrop-filter:blur(5px); }
+    .auth-shell { padding:25px; }
+    .auth-shell h2 { margin:8px 0 9px; }
+    .auth-shell p { color:var(--muted); line-height:1.55; margin:0 0 18px; }
+    .auth-form { display:grid; grid-template-columns:1fr auto; gap:8px; }
+    .auth-form input { width:100%; border:1px solid var(--line-strong); background:#120419; color:white; padding:12px; font:inherit; }
+    .auth-note { margin-top:12px; color:#9f8ca7; font-size:11px; }
+    .auth-actions { display:flex; justify-content:space-between; gap:8px; margin-top:18px; }
 
     .content { padding: 34px; max-width: 1560px; margin: 0 auto; }
     .view { display: none; }
@@ -369,6 +385,8 @@
       .team-card { grid-template-columns: 60px 1fr; }
       .team-avatar { width: 60px; height: 60px; font-size: 24px; }
       .top-actions .btn:not(.mobile-menu) { display: none; }
+      .top-actions #teamAccessBtn { display:inline-flex; padding:9px 10px; }
+      .sync-status { display:none; }
       h1 { font-size: 44px; }
       .footer-note { display: block; }
       .library-toolbar, .library-grid { grid-template-columns: 1fr; }
@@ -428,6 +446,8 @@
         </div>
         <div class="top-actions">
           <button class="btn mobile-menu" id="menuBtn">Menú</button>
+          <span class="sync-status" id="syncStatus" data-state="connecting">Conectando…</span>
+          <button class="btn" id="teamAccessBtn">Entrar al equipo</button>
           <button class="btn" id="resetBtn">Reiniciar progreso</button>
           <button class="btn btn-primary" data-go="pendientes">Ver pendientes</button>
         </div>
@@ -477,7 +497,7 @@
 
         <section class="view" id="view-pendientes">
           <div class="section-head" style="margin-top:0">
-            <div><div class="eyebrow">Control operativo</div><h2>Pendientes del mes</h2><p>Marca cada tarea cuando esté realmente lista. El avance queda guardado en este navegador y actualiza todo el dashboard.</p></div>
+            <div><div class="eyebrow">Control operativo</div><h2>Pendientes del mes</h2><p>Marca cada tarea cuando esté realmente lista. El avance se comparte en tiempo real y actualiza el dashboard para todo el equipo.</p></div>
             <button class="btn" id="myPendingBtn">Ver pendientes de Camila</button>
           </div>
           <div class="pending-hero">
@@ -729,8 +749,25 @@
       </div>
     </div>
   </dialog>
+  <dialog class="auth-dialog" id="authDialog" aria-labelledby="authTitle">
+    <div class="auth-shell">
+      <span class="tag amber">PROGRESO COMPARTIDO</span>
+      <h2 id="authTitle">Entrar al equipo</h2>
+      <p id="authCopy">Usa tu correo autorizado. Recibirás un enlace seguro para entrar; no necesitas contraseña.</p>
+      <form class="auth-form" id="authForm">
+        <input id="authEmail" type="email" autocomplete="email" placeholder="tu@correo.com" required>
+        <button class="btn btn-primary" type="submit">Enviar enlace</button>
+      </form>
+      <div class="auth-note" id="authNote">Todos pueden consultar el avance. Solo el equipo autorizado puede marcar tareas.</div>
+      <div class="auth-actions">
+        <button class="btn" id="authSignOut" type="button" style="display:none">Cerrar sesión</button>
+        <button class="btn" id="authClose" type="button">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
   <div class="toast" id="toast">Texto copiado</div>
   <script src="content.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const tasks = [
       {id:'o01',date:'2026-10-01',week:'Semana 1',channel:'Instagram + TikTok',front:'Autoridad',owner:'Camila + Santiago',support:'Camila: guion, dirección, edición y publicación · Santiago: cámara',title:'Reel: Un programa de puntos no arregla una mala estrategia',detail:'Video de apertura del mes. Adaptar hook y ritmo para cada plataforma.',kpi:'Guardados, compartidos y DMs'},
@@ -791,6 +828,11 @@
     const progressKey = 'panza-oct-2026-completed';
     const progressMigrationKey = 'panza-oct-2026-email-progress-v1';
     const completed = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
+    const supabaseUrl = 'https://xrdrzkewowxbwojokbyj.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyZHJ6a2V3b3d4Yndvam9rYnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDM4MDMsImV4cCI6MjEwNjgxOTgwM30.wtA5_3e3hMIzhmOvTbmqJqXUKjqVhoNfwNHojn_BqHU';
+    const db = window.supabase?.createClient(supabaseUrl,supabaseAnonKey,{auth:{persistSession:true,detectSessionInUrl:true}});
+    let currentSession = null;
+    let isTeamMember = false;
     if(!localStorage.getItem(progressMigrationKey)){
       ['o10','o20','o29','o39'].forEach(id=>completed.add(id));
       localStorage.setItem(progressKey,JSON.stringify([...completed]));
@@ -828,6 +870,72 @@
       renderPendings();
     }
 
+    function setSyncStatus(state,label){
+      const el=$('#syncStatus');
+      el.dataset.state=state;
+      el.textContent=label;
+    }
+
+    function openAuth(){
+      const signedIn=Boolean(currentSession);
+      $('#authForm').style.display=signedIn?'none':'grid';
+      $('#authSignOut').style.display=signedIn?'inline-flex':'none';
+      $('#authTitle').textContent=signedIn?(isTeamMember?'Sesión del equipo activa':'Acceso pendiente'):'Entrar al equipo';
+      $('#authCopy').textContent=signedIn
+        ? `${currentSession.user.email} · ${isTeamMember?'Puedes actualizar el progreso compartido.':'Este correo inició sesión, pero todavía no está autorizado para editar.'}`
+        : 'Usa tu correo autorizado. Recibirás un enlace seguro para entrar; no necesitas contraseña.';
+      $('#authNote').textContent=signedIn&&!isTeamMember?'Camila debe agregar este correo a la lista del equipo en Supabase.':'Todos pueden consultar el avance. Solo el equipo autorizado puede marcar tareas.';
+      $('#authDialog').showModal();
+    }
+
+    async function refreshMembership(){
+      if(!db||!currentSession){ isTeamMember=false; return; }
+      const {data,error}=await db.from('dashboard_members').select('email').eq('email',currentSession.user.email).maybeSingle();
+      isTeamMember=!error&&Boolean(data);
+    }
+
+    async function refreshSessionUI(){
+      if(!db){ setSyncStatus('offline','Sin conexión'); return; }
+      const {data}=await db.auth.getSession();
+      currentSession=data.session;
+      await refreshMembership();
+      $('#teamAccessBtn').textContent=currentSession?(isTeamMember?'Equipo conectado':'Acceso pendiente'):'Entrar al equipo';
+      setSyncStatus(currentSession&&isTeamMember?'shared':'readonly',currentSession&&isTeamMember?'Compartido · editable':'Compartido · solo lectura');
+    }
+
+    async function loadSharedProgress(){
+      if(!db){ setSyncStatus('offline','Sin conexión'); return; }
+      setSyncStatus('connecting','Conectando…');
+      const {data,error}=await db.from('task_progress').select('task_id,completed');
+      if(error){ setSyncStatus('offline','Sin conexión'); return; }
+      completed.clear();
+      data.forEach(row=>{ if(row.completed) completed.add(row.task_id); });
+      saveProgress();
+      await refreshSessionUI();
+    }
+
+    async function setSharedTaskState(id,done){
+      const previous=completed.has(id);
+      if(!currentSession||!isTeamMember){
+        openAuth();
+        showToast(currentSession?'Tu correo todavía no está autorizado':'Entra al equipo para editar');
+        return false;
+      }
+      done?completed.add(id):completed.delete(id);
+      saveProgress();
+      setSyncStatus('connecting','Guardando…');
+      const {error}=await db.from('task_progress').upsert({task_id:id,completed:done,updated_at:new Date().toISOString(),updated_by:currentSession.user.id,updated_by_email:currentSession.user.email},{onConflict:'task_id'});
+      if(error){
+        previous?completed.add(id):completed.delete(id);
+        saveProgress();
+        setSyncStatus('offline','No se guardó');
+        showToast('No pudimos guardar el cambio');
+        return false;
+      }
+      setSyncStatus('shared','Compartido · editable');
+      return true;
+    }
+
     function renderPendings(){
       const q=$('#pendingSearch').value.trim().toLowerCase();
       const status=$('#pendingStatus').value;
@@ -860,8 +968,9 @@
       $('#pendingEmpty').style.display=list.length?'none':'block';
       $$('#pendingList .pending-check').forEach(check=>check.addEventListener('change',e=>{
         const id=e.target.closest('.pending-row').dataset.id;
-        e.target.checked?completed.add(id):completed.delete(id);
-        saveProgress();
+        const requested=e.target.checked;
+        e.target.checked=completed.has(id);
+        setSharedTaskState(id,requested);
       }));
       $$('#pendingList .pending-row').forEach(row=>{
         row.addEventListener('click',e=>{ if(!e.target.classList.contains('pending-check')) openTaskDetail(row.dataset.id); });
@@ -923,9 +1032,10 @@
       renderMonth(list);
       $$('#taskBody .check').forEach(c=>c.addEventListener('change',e=>{
         const row=e.target.closest('tr'),id=row.dataset.id;
-        e.target.checked?completed.add(id):completed.delete(id);
-        row.classList.toggle('done',e.target.checked);
-        saveProgress();
+        const requested=e.target.checked;
+        e.target.checked=completed.has(id);
+        row.classList.toggle('done',completed.has(id));
+        setSharedTaskState(id,requested);
       }));
     }
     $$('.filter-control').forEach(el=>el.addEventListener('input',()=>{activePreset='';renderTasks();}));
@@ -965,13 +1075,15 @@
     preview('#clientEmailTaskPreview',tasks.filter(t=>t.channel==='Email Clientes'));
     preview('#radarTaskPreview',tasks.filter(t=>t.channel==='Radar'));
 
+    function showToast(message){
+      const toast=$('#toast');
+      toast.textContent=message;
+      toast.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);
+    }
     function copyText(value){
-      navigator.clipboard.writeText(value).then(()=>{
-        const toast=$('#toast');
-        toast.classList.add('show');
-        clearTimeout(window.__toastTimer);
-        window.__toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);
-      });
+      navigator.clipboard.writeText(value).then(()=>showToast('Texto copiado'));
     }
 
     const taskDialog=$('#taskDialog');
@@ -1011,10 +1123,9 @@
     }
     $('#taskDialogClose').addEventListener('click',()=>taskDialog.close());
     taskDialog.addEventListener('click',e=>{if(e.target===taskDialog)taskDialog.close();});
-    $('#taskDialogDone').addEventListener('click',()=>{
-      completed.has(activeTaskId)?completed.delete(activeTaskId):completed.add(activeTaskId);
-      saveProgress();
-      taskDialog.close();
+    $('#taskDialogDone').addEventListener('click',async()=>{
+      const changed=await setSharedTaskState(activeTaskId,!completed.has(activeTaskId));
+      if(changed) taskDialog.close();
     });
     $('#taskDialogLibrary').addEventListener('click',()=>{
       const asset=contentAssets.find(a=>a.taskId===activeTaskId);
@@ -1063,11 +1174,49 @@
       else { $('#filterChannel').value=f; }
       renderTasks(); go('calendario');
     }));
-    $('#resetBtn').addEventListener('click',()=>{
-      if(confirm('¿Quieres borrar todo el progreso marcado en este dashboard?')){completed.clear();localStorage.setItem(progressKey,'[]');localStorage.setItem(progressMigrationKey,'1');renderTasks();renderProgress();renderPendings();}
+    $('#resetBtn').addEventListener('click',async()=>{
+      if(!currentSession||!isTeamMember){ openAuth(); return; }
+      if(!confirm('¿Quieres marcar como pendientes todas las tareas del dashboard compartido?')) return;
+      setSyncStatus('connecting','Guardando…');
+      const rows=tasks.map(t=>({task_id:t.id,completed:false,updated_at:new Date().toISOString(),updated_by:currentSession.user.id,updated_by_email:currentSession.user.email}));
+      const {error}=await db.from('task_progress').upsert(rows,{onConflict:'task_id'});
+      if(error){ setSyncStatus('offline','No se guardó'); showToast('No pudimos reiniciar el progreso'); return; }
+      completed.clear(); saveProgress(); setSyncStatus('shared','Compartido · editable'); showToast('Progreso reiniciado');
     });
 
+    $('#teamAccessBtn').addEventListener('click',openAuth);
+    $('#authClose').addEventListener('click',()=>$('#authDialog').close());
+    $('#authDialog').addEventListener('click',e=>{if(e.target===$('#authDialog'))$('#authDialog').close();});
+    $('#authForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const email=$('#authEmail').value.trim().toLowerCase();
+      $('#authNote').textContent='Enviando enlace seguro…';
+      const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+      $('#authNote').textContent=error?'No pudimos enviar el enlace. Revisa el correo e inténtalo de nuevo.':'Revisa tu correo y abre el enlace para entrar al dashboard.';
+    });
+    $('#authSignOut').addEventListener('click',async()=>{
+      await db.auth.signOut();
+      currentSession=null; isTeamMember=false;
+      $('#authDialog').close();
+      await refreshSessionUI();
+    });
+
+    if(db){
+      db.auth.onAuthStateChange(async(_event,session)=>{
+        currentSession=session;
+        await refreshMembership();
+        await refreshSessionUI();
+      });
+      db.channel('panza-task-progress').on('postgres_changes',{event:'*',schema:'public',table:'task_progress'},payload=>{
+        const row=payload.new;
+        if(!row?.task_id) return;
+        row.completed?completed.add(row.task_id):completed.delete(row.task_id);
+        saveProgress();
+      }).subscribe();
+    }
+
     renderTasks(); renderProgress(); renderWeeks(); renderPendings();
+    loadSharedProgress();
   </script>
 </body>
 </html>
