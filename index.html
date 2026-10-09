@@ -42,7 +42,22 @@
     button, input, select { font: inherit; }
     button { border-radius: 0; }
     a { color: inherit; }
-    .shell { display: grid; grid-template-columns: 250px minmax(0,1fr); min-height: 100vh; }
+    .shell { display: none; grid-template-columns: 250px minmax(0,1fr); min-height: 100vh; }
+    body.authorized .shell { display:grid; }
+    .login-gate { min-height:100vh; display:grid; place-items:center; padding:24px; position:relative; overflow:hidden; background:radial-gradient(circle at 75% 25%,rgba(255,0,132,.25),transparent 35%),radial-gradient(circle at 20% 85%,rgba(178,0,209,.28),transparent 40%),var(--recessed); }
+    body.authorized .login-gate { display:none; }
+    .login-card { width:min(470px,100%); padding:34px; border:1px solid var(--line-strong); background:rgba(24,6,32,.94); box-shadow:0 24px 80px rgba(0,0,0,.35); }
+    .login-logo { width:132px; height:auto; margin-bottom:24px; }
+    .login-card h1 { font-size:40px; margin:12px 0 8px; }
+    .login-card > p { color:var(--muted); line-height:1.6; margin:0 0 22px; }
+    .login-form { display:grid; gap:10px; }
+    .login-form label { color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+    .login-form input { width:100%; border:1px solid var(--line-strong); background:#120419; color:white; padding:13px; font:inherit; }
+    .login-form input:focus { outline:0; border-color:var(--amber); }
+    .login-form .btn { margin-top:4px; }
+    .login-help { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:15px; }
+    .login-link { border:0; background:transparent; color:var(--amber); padding:0; cursor:pointer; font-size:11px; font-weight:700; text-align:left; }
+    .login-message { min-height:20px; margin-top:14px; color:#f2d6a5; font-size:11px; line-height:1.5; }
 
     .sidebar {
       position: sticky;
@@ -117,7 +132,7 @@
     .auth-shell { padding:25px; }
     .auth-shell h2 { margin:8px 0 9px; }
     .auth-shell p { color:var(--muted); line-height:1.55; margin:0 0 18px; }
-    .auth-form { display:grid; grid-template-columns:1fr auto; gap:8px; }
+    .auth-form { display:grid; grid-template-columns:1fr; gap:8px; }
     .auth-form input { width:100%; border:1px solid var(--line-strong); background:#120419; color:white; padding:12px; font:inherit; }
     .auth-note { margin-top:12px; color:#9f8ca7; font-size:11px; }
     .auth-actions { display:flex; justify-content:space-between; gap:8px; margin-top:18px; }
@@ -409,6 +424,26 @@
   </style>
 </head>
 <body>
+  <section class="login-gate" id="loginGate" aria-labelledby="loginTitle">
+    <div class="login-card">
+      <img class="login-logo" src="panza-logo.png" alt="Panza">
+      <span class="tag amber">DASHBOARD PRIVADO</span>
+      <h1 id="loginTitle">Entrar al panel</h1>
+      <p>Acceso exclusivo para el equipo autorizado de Panza.</p>
+      <form class="login-form" id="loginForm">
+        <label for="loginEmail">Correo</label>
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="tu@correo.com" required>
+        <label for="loginPassword">Contraseña</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña" minlength="8" required>
+        <button class="btn btn-primary" type="submit">Entrar</button>
+      </form>
+      <div class="login-help">
+        <button class="login-link" id="forgotPasswordBtn" type="button">Olvidé mi contraseña</button>
+        <span style="color:var(--muted);font-size:10px">Solo 2 cuentas autorizadas</span>
+      </div>
+      <div class="login-message" id="loginMessage">Ingresa con el correo que recibió la invitación.</div>
+    </div>
+  </section>
   <div class="shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -751,18 +786,27 @@
   </dialog>
   <dialog class="auth-dialog" id="authDialog" aria-labelledby="authTitle">
     <div class="auth-shell">
-      <span class="tag amber">PROGRESO COMPARTIDO</span>
-      <h2 id="authTitle">Entrar al equipo</h2>
-      <p id="authCopy">Usa tu correo autorizado. Recibirás un enlace seguro para entrar; no necesitas contraseña.</p>
-      <form class="auth-form" id="authForm">
-        <input id="authEmail" type="email" autocomplete="email" placeholder="tu@correo.com" required>
-        <button class="btn btn-primary" type="submit">Enviar enlace</button>
-      </form>
-      <div class="auth-note" id="authNote">Todos pueden consultar el avance. Solo el equipo autorizado puede marcar tareas.</div>
+      <span class="tag amber">CUENTA DEL EQUIPO</span>
+      <h2 id="authTitle">Sesión activa</h2>
+      <p id="authCopy"></p>
+      <div class="auth-note" id="authNote">Tu progreso se comparte en tiempo real con el equipo.</div>
       <div class="auth-actions">
-        <button class="btn" id="authSignOut" type="button" style="display:none">Cerrar sesión</button>
+        <button class="btn" id="authSignOut" type="button">Cerrar sesión</button>
         <button class="btn" id="authClose" type="button">Cerrar</button>
       </div>
+    </div>
+  </dialog>
+  <dialog class="auth-dialog" id="passwordDialog" aria-labelledby="passwordTitle">
+    <div class="auth-shell">
+      <span class="tag amber">ACTIVAR CUENTA</span>
+      <h2 id="passwordTitle">Crea tu contraseña</h2>
+      <p>Debe tener mínimo 8 caracteres. Esta será la contraseña para entrar al dashboard.</p>
+      <form class="auth-form" id="passwordForm">
+        <input id="newPassword" type="password" autocomplete="new-password" placeholder="Nueva contraseña" minlength="8" required>
+        <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="8" required>
+        <button class="btn btn-primary" type="submit">Guardar contraseña</button>
+      </form>
+      <div class="auth-note" id="passwordNote"></div>
     </div>
   </dialog>
   <div class="toast" id="toast">Texto copiado</div>
@@ -877,14 +921,9 @@
     }
 
     function openAuth(){
-      const signedIn=Boolean(currentSession);
-      $('#authForm').style.display=signedIn?'none':'grid';
-      $('#authSignOut').style.display=signedIn?'inline-flex':'none';
-      $('#authTitle').textContent=signedIn?(isTeamMember?'Sesión del equipo activa':'Acceso pendiente'):'Entrar al equipo';
-      $('#authCopy').textContent=signedIn
-        ? `${currentSession.user.email} · ${isTeamMember?'Puedes actualizar el progreso compartido.':'Este correo inició sesión, pero todavía no está autorizado para editar.'}`
-        : 'Usa tu correo autorizado. Recibirás un enlace seguro para entrar; no necesitas contraseña.';
-      $('#authNote').textContent=signedIn&&!isTeamMember?'Camila debe agregar este correo a la lista del equipo en Supabase.':'Todos pueden consultar el avance. Solo el equipo autorizado puede marcar tareas.';
+      if(!currentSession||!isTeamMember) return;
+      $('#authTitle').textContent='Sesión activa';
+      $('#authCopy').textContent=`Ingresaste como ${currentSession.user.email}. Puedes consultar y actualizar todo el dashboard.`;
       $('#authDialog').showModal();
     }
 
@@ -895,23 +934,34 @@
     }
 
     async function refreshSessionUI(){
-      if(!db){ setSyncStatus('offline','Sin conexión'); return; }
+      if(!db){ document.body.classList.remove('authorized'); $('#loginMessage').textContent='No pudimos conectar con el sistema de acceso.'; return; }
       const {data}=await db.auth.getSession();
       currentSession=data.session;
       await refreshMembership();
-      $('#teamAccessBtn').textContent=currentSession?(isTeamMember?'Equipo conectado':'Acceso pendiente'):'Entrar al equipo';
-      setSyncStatus(currentSession&&isTeamMember?'shared':'readonly',currentSession&&isTeamMember?'Compartido · editable':'Compartido · solo lectura');
+      const authorized=Boolean(currentSession&&isTeamMember);
+      document.body.classList.toggle('authorized',authorized);
+      $('#teamAccessBtn').textContent=authorized?'Mi cuenta':'Entrar';
+      if(authorized){
+        setSyncStatus('shared','Compartido · editable');
+        $('#loginMessage').textContent='';
+      } else if(currentSession){
+        $('#loginMessage').textContent='Este correo no está autorizado para acceder al dashboard.';
+        await db.auth.signOut();
+        currentSession=null;
+      }
+      return authorized;
     }
 
     async function loadSharedProgress(){
       if(!db){ setSyncStatus('offline','Sin conexión'); return; }
       setSyncStatus('connecting','Conectando…');
+      const authorized=await refreshSessionUI();
+      if(!authorized) return;
       const {data,error}=await db.from('task_progress').select('task_id,completed');
       if(error){ setSyncStatus('offline','Sin conexión'); return; }
       completed.clear();
       data.forEach(row=>{ if(row.completed) completed.add(row.task_id); });
       saveProgress();
-      await refreshSessionUI();
     }
 
     async function setSharedTaskState(id,done){
@@ -1187,25 +1237,54 @@
     $('#teamAccessBtn').addEventListener('click',openAuth);
     $('#authClose').addEventListener('click',()=>$('#authDialog').close());
     $('#authDialog').addEventListener('click',e=>{if(e.target===$('#authDialog'))$('#authDialog').close();});
-    $('#authForm').addEventListener('submit',async e=>{
+    $('#loginForm').addEventListener('submit',async e=>{
       e.preventDefault();
-      const email=$('#authEmail').value.trim().toLowerCase();
-      $('#authNote').textContent='Enviando enlace seguro…';
-      const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
-      $('#authNote').textContent=error?'No pudimos enviar el enlace. Revisa el correo e inténtalo de nuevo.':'Revisa tu correo y abre el enlace para entrar al dashboard.';
+      const email=$('#loginEmail').value.trim().toLowerCase();
+      const password=$('#loginPassword').value;
+      $('#loginMessage').textContent='Verificando acceso…';
+      const {error}=await db.auth.signInWithPassword({email,password});
+      if(error){ $('#loginMessage').textContent='Correo o contraseña incorrectos. Si es tu primer ingreso, abre la invitación que recibiste.'; return; }
+      const authorized=await refreshSessionUI();
+      if(authorized) await loadSharedProgress();
+    });
+    $('#forgotPasswordBtn').addEventListener('click',async()=>{
+      const email=$('#loginEmail').value.trim().toLowerCase();
+      if(!email){ $('#loginMessage').textContent='Escribe primero tu correo autorizado.'; $('#loginEmail').focus(); return; }
+      $('#loginMessage').textContent='Enviando recuperación…';
+      const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+      $('#loginMessage').textContent=error?'No pudimos enviar la recuperación. Inténtalo nuevamente.':'Revisa tu correo. Te enviamos un enlace para crear una nueva contraseña.';
+    });
+    $('#passwordForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const password=$('#newPassword').value;
+      if(password!==$('#confirmPassword').value){ $('#passwordNote').textContent='Las contraseñas no coinciden.'; return; }
+      $('#passwordNote').textContent='Guardando…';
+      const {error}=await db.auth.updateUser({password});
+      if(error){ $('#passwordNote').textContent='No pudimos guardar la contraseña. El enlace puede haber vencido.'; return; }
+      $('#passwordNote').textContent='Contraseña creada. Ya puedes usar el dashboard.';
+      setTimeout(()=>$('#passwordDialog').close(),900);
     });
     $('#authSignOut').addEventListener('click',async()=>{
       await db.auth.signOut();
       currentSession=null; isTeamMember=false;
       $('#authDialog').close();
+      document.body.classList.remove('authorized');
+      $('#loginPassword').value='';
+      $('#loginMessage').textContent='Sesión cerrada correctamente.';
       await refreshSessionUI();
     });
 
     if(db){
-      db.auth.onAuthStateChange(async(_event,session)=>{
-        currentSession=session;
-        await refreshMembership();
-        await refreshSessionUI();
+      db.auth.onAuthStateChange((event,session)=>{
+        setTimeout(async()=>{
+          currentSession=session;
+          const authorized=await refreshSessionUI();
+          if(authorized){
+            await loadSharedProgress();
+            const activation=/type=(invite|recovery)/.test(location.hash+location.search)||event==='PASSWORD_RECOVERY';
+            if(activation&&!$('#passwordDialog').open) $('#passwordDialog').showModal();
+          }
+        },0);
       });
       db.channel('panza-task-progress').on('postgres_changes',{event:'*',schema:'public',table:'task_progress'},payload=>{
         const row=payload.new;
